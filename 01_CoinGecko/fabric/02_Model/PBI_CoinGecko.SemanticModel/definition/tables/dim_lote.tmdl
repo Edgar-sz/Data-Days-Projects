@@ -1,0 +1,131 @@
+/// Catálogo de lotes de extracción de la API de CoinGecko. Una fila por lote, con su identificador, fechas de inicio, fin y extracción (UTC), estado, moneda, ruta en la capa Bronze, modo de datos, entorno, origen y un indicador de si es el lote vigente.
+table dim_lote
+	lineageTag: 9ee035dd-e44f-4314-8e2b-a6714b78be82
+
+	/// Clave interna del lote. Solo para relacionar tablas; está oculta.
+	column lote_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 923a6dd1-dd9a-4ed0-b834-d534c299be57
+		summarizeBy: none
+		sourceColumn: lote_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Identificador del lote: fecha y hora UTC de la carga más un código aleatorio.
+	column batch_id
+		dataType: string
+		lineageTag: d3398ae4-d7ae-4936-8c28-b1a0c8b51710
+		summarizeBy: none
+		sourceColumn: batch_id
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Momento en que empezó el procesamiento del lote (UTC).
+	column inicio_utc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c2b360dc-21db-4615-8366-c713507bf90e
+		summarizeBy: none
+		sourceColumn: inicio_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Momento en que terminó la publicación del lote en Gold (UTC).
+	column fin_utc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 750f876a-d786-4af1-83a6-34a92d9a981b
+		summarizeBy: none
+		sourceColumn: fin_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Momento en que se consultó la API de CoinGecko (UTC).
+	column extraido_utc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: fca9baa2-f7e8-4944-9f70-a687e73fa247
+		summarizeBy: none
+		sourceColumn: extraido_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Estado del lote, por ejemplo PUBLICADO.
+	column estado
+		dataType: string
+		lineageTag: 892abae6-2ea1-483e-bf77-b3928df9b7f5
+		summarizeBy: none
+		sourceColumn: estado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Moneda de los importes del lote (usd).
+	column moneda
+		dataType: string
+		lineageTag: f1164c4b-2f74-4232-9898-83c939de8d75
+		summarizeBy: none
+		sourceColumn: moneda
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Carpeta del Lakehouse donde quedó guardada la respuesta original de la API (capa Bronze).
+	column ruta_bronze
+		dataType: string
+		lineageTag: 21978949-10ac-4a48-b39f-85df4e29462a
+		summarizeBy: none
+		sourceColumn: ruta_bronze
+
+		annotation SummarizationSetBy = Automatic
+
+	/// LIVE_REAL: consulta nueva a la API. REPLAY_REAL: repetición de un archivo JSON ya guardado.
+	column modo_datos
+		dataType: string
+		lineageTag: 02228827-5598-46af-a7a0-8916e972e962
+		summarizeBy: none
+		sourceColumn: modo_datos
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dónde se ejecutó la carga, por ejemplo Fabric Notebook.
+	column entorno
+		dataType: string
+		lineageTag: d6cdfe41-cf57-47f6-91db-da99b41e89b6
+		summarizeBy: none
+		sourceColumn: entorno
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Fuente de los datos del lote.
+	column origen
+		dataType: string
+		lineageTag: 77903e68-3273-42f9-bd4b-47febd271cec
+		summarizeBy: none
+		sourceColumn: origen
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero solo para el lote vigente, el más reciente.
+	column es_actual
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ae9cfc0c-2330-4c54-9332-32d7a2294cf6
+		summarizeBy: none
+		sourceColumn: es_actual
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_lote = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_dim_lote = Origen{[Schema="gold",Item="dim_lote"]}[Data]
+				in
+				    gold_dim_lote
+
+	annotation PBI_ResultType = Table
+

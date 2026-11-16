@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "LH01_ObservatorioCripto",
+    "description": "Lakehouse del proyecto: tablas bronze, silver y gold, y los archivos originales de la API"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d46bc981-1a89-af85-4398-be2617c320fa"
+  }
+}

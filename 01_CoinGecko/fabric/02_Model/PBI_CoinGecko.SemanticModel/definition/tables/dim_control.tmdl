@@ -1,0 +1,55 @@
+/// Catálogo de controles de calidad de datos. Una fila por control, con su identificador, la fase del pipeline donde se aplica y la regla que valida.
+table dim_control
+	lineageTag: fbffcc2b-e571-47d9-8f06-b6d896e506b3
+
+	/// Clave interna del control. Solo para relacionar tablas; está oculta.
+	column control_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 02a7b592-a643-4d16-a0e8-cca501fa3fd6
+		summarizeBy: none
+		sourceColumn: control_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Código del control de calidad (C01 a C08).
+	column control_id
+		dataType: string
+		lineageTag: 1cede1b2-35e7-456e-8e16-cc9d6190fd3d
+		summarizeBy: none
+		sourceColumn: control_id
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Capa del pipeline donde se aplica el control: Bronze (dato crudo), Silver (dato limpio) o Gold (dato publicado).
+	column fase
+		dataType: string
+		lineageTag: 7f062144-25db-4670-ac1b-ebf8210d836f
+		summarizeBy: none
+		sourceColumn: fase
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Qué comprueba el control, por ejemplo 'Claves únicas' o 'Filas inválidas'.
+	column regla
+		dataType: string
+		lineageTag: a323e078-43df-49a4-90d1-6495408be37d
+		summarizeBy: none
+		sourceColumn: regla
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_control = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_dim_control = Origen{[Schema="gold",Item="dim_control"]}[Data]
+				in
+				    gold_dim_control
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,83 @@
+/// Resultado de los controles de calidad en el lote actual. Una fila por control y lote, con las filas observadas, el umbral permitido y el resultado de la validación.
+table fact_controles_actuales
+	lineageTag: 874dbadd-c0a6-41ba-96f1-aca496edcd6f
+
+	/// Clave hacia dim_control. Está oculta.
+	column control_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a3204ebe-f2e7-4677-9b33-a13a66186b61
+		summarizeBy: none
+		sourceColumn: control_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave hacia dim_lote. Está oculta.
+	column lote_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e1d4bd1e-a882-43b7-8214-f43cb353ff26
+		summarizeBy: none
+		sourceColumn: lote_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave hacia dim_fecha. Está oculta.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b18b9eac-4d24-4a09-8fcc-21782b2d5b12
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Valor que encontró el control en el lote, por ejemplo cuántas filas inválidas hubo.
+	column observados
+		dataType: int64
+		formatString: 0
+		lineageTag: e0d36a8c-cc1e-4e24-b2ed-3b438464bb5f
+		summarizeBy: none
+		sourceColumn: observados
+
+		annotation SummarizationSetBy = User
+
+	/// Valor esperado o máximo permitido para ese control.
+	column umbral
+		dataType: int64
+		formatString: 0
+		lineageTag: 256a9dce-4959-4964-843c-010db499a3c5
+		summarizeBy: none
+		sourceColumn: umbral
+
+		annotation SummarizationSetBy = User
+
+	/// OK si el control se cumple; AVISO si no.
+	column resultado
+		dataType: string
+		lineageTag: 28170904-73db-45db-a647-99db70e8135f
+		summarizeBy: none
+		sourceColumn: resultado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_controles_actuales = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_fact_controles_actuales = Origen{[Schema="gold",Item="fact_controles_actuales"]}[Data]
+				in
+				    gold_fact_controles_actuales
+
+	annotation PBI_ResultType = Table
+

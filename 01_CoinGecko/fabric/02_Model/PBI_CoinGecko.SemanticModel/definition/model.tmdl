@@ -1,0 +1,26 @@
+model Model
+	culture: es-PE
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-PE
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["dim_activo","dim_control","dim_fecha","dim_lote","fact_controles_actuales","fact_ejecuciones","fact_mercado_actual","_Measures"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table dim_activo
+ref table dim_control
+ref table dim_fecha
+ref table dim_lote
+ref table fact_controles_actuales
+ref table fact_ejecuciones
+ref table fact_mercado_actual
+ref table _Measures
+
+ref cultureInfo es-PE
+

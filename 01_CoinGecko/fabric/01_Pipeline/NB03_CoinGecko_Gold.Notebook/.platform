@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "NB03_CoinGecko_Gold",
+    "description": "Publica el modelo en estrella y los controles de calidad, y refresca el modelo semántico (capa Gold)"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "b0d9af24-b7ba-804a-4994-651576f4da33"
+  }
+}

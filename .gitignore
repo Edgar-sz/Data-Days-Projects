@@ -1,0 +1,52 @@
+# ─────────────────────────────────────────────────────────────
+# Power BI / Microsoft Fabric
+# ─────────────────────────────────────────────────────────────
+# Configuración local de Power BI Desktop (rutas y ids de tu equipo)
+**/.pbi/localSettings.json
+# Caché de datos del modelo semántico (pesa mucho y contiene datos)
+**/.pbi/cache.abf
+# Copias de recuperación y bloqueos de Office/Power BI
+*.pbix.bak
+~$*
+
+# ─────────────────────────────────────────────────────────────
+# Python y Jupyter
+# ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# ─────────────────────────────────────────────────────────────
+# Secretos y credenciales: nunca se versionan
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+secrets.*
+*token*.txt
+*.secret
+
+# ─────────────────────────────────────────────────────────────
+# Sistema operativo y editores
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Registros y temporales
+*.log
+tmp/
+temp/

@@ -1,0 +1,32 @@
+relationship AutoDetected_689b98c1-e524-43ad-be9e-7c13524b61bb
+	fromColumn: fact_controles_actuales.fecha_key
+	toColumn: dim_fecha.fecha_key
+
+relationship AutoDetected_5b919578-9653-4b7b-940e-5976ec01ffd1
+	fromColumn: fact_mercado_actual.fecha_key
+	toColumn: dim_fecha.fecha_key
+
+relationship AutoDetected_c0daf073-c40b-4855-8b57-b49dbe333fd8
+	fromColumn: fact_controles_actuales.lote_key
+	toColumn: dim_lote.lote_key
+
+relationship AutoDetected_694e8001-eca7-4387-ba48-65a4beff49f2
+	fromColumn: fact_mercado_actual.lote_key
+	toColumn: dim_lote.lote_key
+
+relationship f209e431-fe47-0916-a693-7f73b582e9d0
+	fromColumn: fact_ejecuciones.fecha_key
+	toColumn: dim_fecha.fecha_key
+
+relationship 653d5e2d-0269-5505-3899-c564049d113d
+	fromColumn: fact_mercado_actual.activo_key
+	toColumn: dim_activo.activo_key
+
+relationship ad602be5-ee0e-9b0f-8767-b2132c5b40cd
+	fromColumn: fact_controles_actuales.control_key
+	toColumn: dim_control.control_key
+
+relationship 3cc2ccb2-4cde-ccb0-8d97-f0fe3c327f67
+	fromColumn: fact_ejecuciones.lote_key
+	toColumn: dim_lote.lote_key
+

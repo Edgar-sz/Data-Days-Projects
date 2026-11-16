@@ -1,0 +1,76 @@
+/// Catálogo de criptomonedas del análisis. Una fila por activo, con su identificador en CoinGecko (coin_id), nombre y símbolo. Se usa para filtrar y agrupar los datos de mercado.
+table dim_activo
+	lineageTag: d5a878fa-4bdc-48e0-bd11-535c68b72ddb
+
+	/// Clave interna del activo (hash estable). Solo sirve para relacionar tablas; está oculta.
+	column activo_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f4a00eae-4d98-4fa6-b139-ae9d0b3b5c50
+		summarizeBy: none
+		sourceColumn: activo_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Identificador único del activo en CoinGecko (por ejemplo bitcoin). Es la clave natural.
+	column coin_id
+		dataType: string
+		lineageTag: 560e6c51-de23-4e73-aec1-cbc8f64bfa9a
+		summarizeBy: none
+		sourceColumn: coin_id
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre del activo, por ejemplo Bitcoin.
+	column nombre
+		dataType: string
+		lineageTag: 592b63ec-fa06-4237-b872-2982dab2ae3a
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Abreviatura o ticker del activo. Puede repetirse entre activos, por eso no se usa como identificador.
+	column simbolo
+		dataType: string
+		lineageTag: 2dff898e-a9cd-4f7b-997a-a1a95ee3eafb
+		summarizeBy: none
+		sourceColumn: simbolo
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Cripto, Stablecoins o Tokenizados. Se asigna en Silver con las categorías de la API de CoinGecko; lo que no está en ninguna otra queda como Cripto.
+	column categoria
+		dataType: string
+		lineageTag: 35a27b8d-e43b-4bf1-b078-671a076fa2e0
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Origen de la clasificación: categoría de la API, excepción manual o regla 'sin otra categoría'. Sirve para auditar.
+	column categoria_fuente
+		dataType: string
+		isHidden
+		lineageTag: a92c451b-9724-4a9a-923b-8e017bd399a6
+		summarizeBy: none
+		sourceColumn: categoria_fuente
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_activo = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_dim_activo = Origen{[Schema="gold",Item="dim_activo"]}[Data]
+				in
+				    gold_dim_activo
+
+	annotation PBI_ResultType = Table
+

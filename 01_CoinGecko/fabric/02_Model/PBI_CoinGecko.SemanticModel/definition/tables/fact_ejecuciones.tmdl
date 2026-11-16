@@ -1,0 +1,80 @@
+/// Resultados de cada ejecución del pipeline de ingesta. Una fila por lote, con el tamaño solicitado y las filas recibidas, aceptadas y rechazadas.
+table fact_ejecuciones
+	lineageTag: 96c09180-2f89-4488-9e1c-31bf16c92300
+
+	/// Clave hacia dim_lote.
+	column lote_key
+		dataType: int64
+		formatString: 0
+		lineageTag: b7d21d94-5fbe-4a25-97d6-28cf891d02bc
+		summarizeBy: none
+		sourceColumn: lote_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Clave hacia dim_fecha. Está oculta.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f2934b75-6f82-4967-b37c-c3b780307072
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Filas que llegaron de la API en ese lote.
+	column filas_recibidas
+		dataType: int64
+		formatString: 0
+		lineageTag: b6718291-2cba-44c0-9c55-4549681a6f2a
+		summarizeBy: none
+		sourceColumn: filas_recibidas
+
+		annotation SummarizationSetBy = User
+
+	/// Filas que pasaron los controles de calidad.
+	column filas_aceptadas
+		dataType: int64
+		formatString: 0
+		lineageTag: b5fc496d-db21-4308-b628-3ded2247c402
+		summarizeBy: none
+		sourceColumn: filas_aceptadas
+
+		annotation SummarizationSetBy = User
+
+	/// Filas descartadas por datos inválidos.
+	column filas_rechazadas
+		dataType: int64
+		formatString: 0
+		lineageTag: 9ff817e7-a3cf-4110-97c4-16e613d1f7b6
+		summarizeBy: none
+		sourceColumn: filas_rechazadas
+
+		annotation SummarizationSetBy = User
+
+	/// Cantidad de activos que se pidió a la API (100).
+	column tamano_solicitado
+		dataType: int64
+		formatString: 0
+		lineageTag: c6780c31-e95b-4b0b-bd2c-3bb19af93dc0
+		summarizeBy: none
+		sourceColumn: tamano_solicitado
+
+		annotation SummarizationSetBy = User
+
+	partition fact_ejecuciones = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_fact_ejecuciones = Origen{[Schema="gold",Item="fact_ejecuciones"]}[Data]
+				in
+				    gold_fact_ejecuciones
+
+	annotation PBI_ResultType = Table
+

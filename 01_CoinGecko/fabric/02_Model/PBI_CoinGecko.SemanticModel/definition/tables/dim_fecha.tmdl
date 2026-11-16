@@ -1,0 +1,91 @@
+/// Tabla calendario con una fila por día. Incluye año, trimestre, mes (número y nombre) y día. Es la dimensión de tiempo compartida por los tres hechos.
+table dim_fecha
+	lineageTag: e36f072a-d228-4943-9288-5062c2c8d69d
+
+	/// Clave de la fecha en formato AAAAMMDD. Solo para relacionar tablas; está oculta.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3be1bfe3-7cb8-437d-8bc8-8edbe1092275
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Fecha del calendario. Corresponde al día UTC en que se procesó el lote.
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e6f7fe19-a0f2-4b3b-ad0d-f94a29218224
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Año de la fecha.
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 008ef845-a088-40c4-a34d-d6a32542dca2
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = User
+
+	/// Trimestre del año (1 a 4).
+	column trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: c6317705-58c8-4cd2-8337-7b5cbe61a861
+		summarizeBy: none
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = User
+
+	/// Número del mes (1 a 12). Sirve para ordenar el nombre del mes.
+	column mes_numero
+		dataType: int64
+		formatString: 0
+		lineageTag: 40295f18-7655-4683-9db5-15cef7aac08f
+		summarizeBy: none
+		sourceColumn: mes_numero
+
+		annotation SummarizationSetBy = User
+
+	/// Nombre del mes en español. Debe ordenarse por mes_numero para que no salga alfabético.
+	column mes
+		dataType: string
+		lineageTag: 8cba1ccf-077f-4dfe-b89c-5ae085586e5c
+		summarizeBy: none
+		sourceColumn: mes
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Día del mes.
+	column dia
+		dataType: int64
+		formatString: 0
+		lineageTag: 20fb702a-885d-413b-aea4-0aab37b89c98
+		summarizeBy: none
+		sourceColumn: dia
+
+		annotation SummarizationSetBy = User
+
+	partition dim_fecha = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_dim_fecha = Origen{[Schema="gold",Item="dim_fecha"]}[Data]
+				in
+				    gold_dim_fecha
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,86 @@
+{
+  "nombre": "Observatorio Cripto · Moon Night",
+  "descripcion": "Paleta de colores usada en el tablero de Power BI. Inspirada en la identidad visual de CoinGecko; proyecto independiente, sin afiliación.",
+  "fuente": "Colores extraídos del informe (fabric/03_Report) y de las medidas HTML del modelo (fabric/02_Model).",
+  "formato": "hex #RRGGBB; los valores rgba se indican en 'rgba'.",
+  "base": {
+    "fondo_pagina": { "hex": "#0D1217", "uso": "Fondo de la página y de las tarjetas de resumen del panel de calidad" },
+    "superficie": { "hex": "#1B232D", "uso": "Tarjetas, termómetro, ranking, panel de calidad y botones de la segmentación en reposo" },
+    "superficie_elevada": { "hex": "#212D3B", "uso": "Reverso de las tarjetas, filas de controles, tooltip y capa de atenuación" },
+    "borde": { "hex": "#384A61", "uso": "Bordes finos, separadores y etiqueta de identificador de control" }
+  },
+  "texto": {
+    "principal": { "hex": "#DFE5EC", "uso": "Textos principales y etiquetas del eje del ranking" },
+    "secundario": { "hex": "#8EA3BE", "uso": "Etiquetas, subtítulos, leyendas y textos de apoyo" },
+    "destacado_suave": { "hex": "#BECBDA", "uso": "Total 'de N' junto a la cifra del termómetro y fase Silver" },
+    "blanco": { "hex": "#FFFFFF", "uso": "Titulares y cifras del panel de calidad" }
+  },
+  "marca_y_acentos": {
+    "verde_marca": { "hex": "#4BCC00", "uso": "Acento principal, activos que suben, mayor capitalización, capitalización total, bordes activos" },
+    "verde_claro": { "hex": "#A6EF5F", "uso": "Texto de botón y segmentación seleccionados; resultado OK" },
+    "verde_bosque": { "hex": "#19412D", "uso": "Fondo del botón de calidad y de la categoría seleccionada" },
+    "coral": { "hex": "#FF7761", "uso": "Activos que caen, variación negativa, controles con aviso" },
+    "naranja": { "hex": "#F7931A", "uso": "Dominancia de Bitcoin; fase Bronze" },
+    "azul": { "hex": "#2FB3FC", "uso": "Volumen de 24 h; rotación diaria en el tooltip" },
+    "amarillo": { "hex": "#FFE866", "uso": "Fase Gold; etiqueta 'poca negociación' en el tooltip" },
+    "azul_grisaceo": { "hex": "#7D96B5", "uso": "Barras del ranking que no son la de mayor capitalización" },
+    "azul_apagado": { "hex": "#4A6382", "uso": "Tramo 'sin cambio' del termómetro" }
+  },
+  "por_elemento": {
+    "pagina": { "fondo": "#0D1217" },
+    "tarjetas_con_flip": {
+      "frente_fondo": "#1B232D",
+      "reverso_fondo": "#212D3B",
+      "etiqueta": "#8EA3BE",
+      "texto_reverso": "#DFE5EC",
+      "capitalizacion_total": "#4BCC00",
+      "volumen_24h": "#2FB3FC",
+      "dominancia_bitcoin": "#F7931A"
+    },
+    "termometro": {
+      "fondo": "#1B232D",
+      "cifra_caen": "#FF7761",
+      "total": "#BECBDA",
+      "tramo_caen": "#FF7761",
+      "tramo_suben": "#4BCC00",
+      "tramo_sin_cambio": "#4A6382",
+      "variacion_media": { "negativa": "#FF7761", "positiva": "#4BCC00", "cero": "#8EA3BE" },
+      "panel_detalle_fondo": "#212D3B"
+    },
+    "ranking": {
+      "fondo": "#1B232D",
+      "barra_mayor": "#4BCC00",
+      "barra_resto": "#7D96B5",
+      "etiqueta_eje": "#DFE5EC",
+      "etiqueta_dato": "#8EA3BE"
+    },
+    "segmentacion_categoria": {
+      "reposo": { "fondo": "#1B232D", "texto": "#8EA3BE", "borde": "#384A61" },
+      "seleccionada": { "fondo": "#19412D", "texto": "#A6EF5F", "borde": "#4BCC00" },
+      "pulsada": { "fondo": "#4BCC00" }
+    },
+    "boton_calidad": {
+      "reposo": { "fondo": "#19412D", "texto": "#A6EF5F", "borde": "#4BCC00" },
+      "hover": { "fondo": "#4BCC00", "borde": "#384A61" },
+      "seleccionado": { "fondo": "#A6EF5F" }
+    },
+    "panel_calidad": {
+      "fondo": "#1B232D",
+      "borde": "#384A61",
+      "fila": "#212D3B",
+      "tarjeta_resumen": "#0D1217",
+      "identificador_control": "#384A61",
+      "fase": { "Bronze": "#F7931A", "Silver": "#BECBDA", "Gold": "#FFE866" },
+      "resultado_ok": { "fondo_rgba": "rgba(75,204,0,.18)", "texto": "#A6EF5F" },
+      "resultado_aviso": { "fondo_rgba": "rgba(255,119,97,.22)", "texto": "#FF7761" },
+      "filas_aceptadas": "#4BCC00"
+    },
+    "tooltip_ranking": {
+      "fondo": "#212D3B",
+      "rotacion": "#2FB3FC",
+      "separador": "#384A61",
+      "actividad": { "muy_activo_y_activo": "#A6EF5F", "moderado": "#8EA3BE", "poca_negociacion": "#FFE866" },
+      "variacion": { "negativa": "#FF7761", "positiva": "#4BCC00", "cero": "#8EA3BE" }
+    }
+  }
+}

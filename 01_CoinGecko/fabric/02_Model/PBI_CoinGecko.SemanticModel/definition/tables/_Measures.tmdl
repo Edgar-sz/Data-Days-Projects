@@ -1,0 +1,510 @@
+/// Tabla contenedora de medidas DAX (no tiene datos). Carpetas: Mercado, Termómetro, Concentración, Ranking, Textos y HTML, y Calidad.
+table _Measures
+	lineageTag: 50155c20-d73c-4380-a8eb-c9ca9bf2e827
+
+	/// Cantidad de activos en el contexto de filtro actual. Sin filtros son los 100 activos del top 100.
+	measure Activos = COUNTROWS(fact_mercado_actual)
+		formatString: 0
+		displayFolder: 1. Mercado
+		lineageTag: 2c3fa64d-e9fc-4870-95fc-a1ccc1abad58
+
+	/// Suma de la capitalización de mercado en USD (precio × unidades en circulación). Se muestra en billones (B = millones de millones).
+	measure 'Capitalización total' = SUM(fact_mercado_actual[capitalizacion_usd])
+		formatString: """US$ ""0.00,,,,"" B"""
+		displayFolder: 1. Mercado
+		lineageTag: c960956c-6234-4b4b-8d72-6cebaea2f0c2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Suma del dinero negociado en las últimas 24 horas, en USD. Se muestra en miles de millones (mil M).
+	measure 'Volumen 24h' = SUM(fact_mercado_actual[volumen_24h_usd])
+		formatString: """US$ ""0.0,,,"" mil M"""
+		displayFolder: 1. Mercado
+		lineageTag: 244aec0e-3a39-4d79-8e84-8532a59498d0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Promedio simple de la variación del precio en 24 h. CoinGecko la entrega en unidades porcentuales, por eso se divide entre 100. No está ponderado por capitalización.
+	measure 'Variación media 24h' = DIVIDE(AVERAGE(fact_mercado_actual[variacion_24h_pct]), 100)
+		formatString: 0.00%;-0.00%
+		displayFolder: 1. Mercado
+		lineageTag: 844ee020-a6ef-4fac-9777-e4108502dd83
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Cantidad de activos cuya variación de precio en 24 h es negativa.
+	measure 'Activos en caída' = COUNTROWS(FILTER(fact_mercado_actual, fact_mercado_actual[variacion_24h_pct] < 0))
+		formatString: 0
+		displayFolder: 2. Termómetro
+		lineageTag: 6d47027c-f1b8-430d-bb0a-c8d7bddabd97
+
+	/// Cantidad de activos cuya variación de precio en 24 h es positiva.
+	measure 'Activos al alza' = COUNTROWS(FILTER(fact_mercado_actual, fact_mercado_actual[variacion_24h_pct] > 0))
+		formatString: 0
+		displayFolder: 2. Termómetro
+		lineageTag: b7e49bbe-fdf8-4d38-a198-3ff09ba6fe34
+
+	/// Activos con variación igual a cero o sin dato. Se calcula como Activos menos los que caen y los que suben.
+	measure 'Activos sin cambio' = [Activos] - [Activos en caída] - [Activos al alza]
+		formatString: 0
+		displayFolder: 2. Termómetro
+		lineageTag: 4b102a14-b7fe-4a89-a32d-0e7b3a5120dd
+
+	/// Peso de la selección actual sobre la capitalización de los 100 activos. El denominador ignora los filtros de dim_activo.
+	measure '% del capital total' = DIVIDE([Capitalización total], CALCULATE([Capitalización total], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: 0ca3b445-b66d-473f-9bd1-e7315900c766
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Peso de la selección actual sobre el volumen de los 100 activos. El denominador ignora los filtros de dim_activo.
+	measure '% del volumen total' = DIVIDE([Volumen 24h], CALCULATE([Volumen 24h], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: ac0ce7ce-1dab-44c2-b107-62568ce60584
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Capitalización de Bitcoin dividida entre la de los 100 activos. Usa ALL sobre categoria, así que no cambia al pulsar un botón de categoría.
+	measure 'Dominancia Bitcoin' = DIVIDE(CALCULATE([Capitalización total], dim_activo[coin_id] = "bitcoin", ALL(dim_activo[categoria])), CALCULATE([Capitalización total], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: 2955d7a1-fc6d-4c39-9659-1284a611356b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Capitalización de Ethereum dividida entre la de los 100 activos. Ignora el botón de categoría.
+	measure 'Dominancia Ethereum' = DIVIDE(CALCULATE([Capitalización total], dim_activo[coin_id] = "ethereum", ALL(dim_activo[categoria])), CALCULATE([Capitalización total], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: 73bd3f01-557a-46bf-8a32-0824d74c654a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Capitalización de Tether dividida entre la de los 100 activos. Ignora el botón de categoría.
+	measure 'Dominancia Tether' = DIVIDE(CALCULATE([Capitalización total], dim_activo[coin_id] = "tether", ALL(dim_activo[categoria])), CALCULATE([Capitalización total], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: 912793bb-1bce-48d2-adb8-189475bd21ec
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Volumen 24 h de Tether dividido entre el volumen de los 100 activos. ALL(categoria) evita que quede vacío cuando el botón elegido no es Stablecoins.
+	measure 'Peso de Tether en el volumen' = DIVIDE(CALCULATE([Volumen 24h], dim_activo[coin_id] = "tether", ALL(dim_activo[categoria])), CALCULATE([Volumen 24h], ALL(dim_activo)))
+		formatString: 0.0%
+		displayFolder: 3. Concentración
+		lineageTag: 1c09b397-9da2-4a9c-bc5a-7dc5200675e0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Capitalización dividida entre 1 000 millones. Valor numérico para el eje y las etiquetas del ranking, en US$ miles de millones.
+	measure 'Capitalización (mil M)' = ```
+			DIVIDE([Capitalización total], 1000000000)
+			
+			```
+		formatString: 0.0
+		displayFolder: 4. Ranking
+		lineageTag: cc239db8-d9b8-42be-ad45-62e25c9ba5ad
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Frase de la portada que responde cuánto del top 100 es cada tipo de activo. Sin botón de categoría: reparto del capital entre Cripto, Stablecoins y Tokenizados. Con un botón elegido: cantidad de activos y su peso en capital y en volumen, siempre en el mismo formato.
+	measure 'Titular dinámico' =
+			
+			VAR c = SELECTEDVALUE(dim_activo[categoria])
+			RETURN
+			    IF(
+			        ISBLANK(c),
+			        "Cripto " & FORMAT(CALCULATE([% del capital total], dim_activo[categoria] = "Cripto"), "0.0%")
+			            & " · Stablecoins " & FORMAT(CALCULATE([% del capital total], dim_activo[categoria] = "Stablecoins"), "0.0%")
+			            & " · Tokenizados " & FORMAT(CALCULATE([% del capital total], dim_activo[categoria] = "Tokenizados"), "0.0%")
+			            & " del capital",
+			        [Activos] & " activos · " & FORMAT([% del capital total], "0.0%") & " del capital · " & FORMAT([% del volumen total], "0.0%") & " del volumen"
+			    )
+		displayFolder: 5. Textos y HTML
+		lineageTag: ef20f51e-2f22-4049-ba33-3fac49ad8953
+
+	/// Frase de apoyo de la portada con la dominancia de Bitcoin y la capitalización total del top 100.
+	measure Subtítulo = "Bitcoin concentra el " & FORMAT([Dominancia Bitcoin], "0.0%") & " de los US$ " & FORMAT(CALCULATE([Capitalización total], ALL(dim_activo)) / 1000000000000, "0.00") & " billones del top 100."
+		displayFolder: 5. Textos y HTML
+		lineageTag: 47cce2b7-3cbd-4402-b048-da35f0aff0b3
+
+	/// Texto 'ETH x% · USDT y%' para el subtítulo de la tarjeta de dominancia de Bitcoin.
+	measure 'Sub dominancia' = "ETH " & FORMAT([Dominancia Ethereum], "0.0%") & " · USDT " & FORMAT([Dominancia Tether], "0.0%")
+		displayFolder: 3. Concentración
+		lineageTag: 11c64445-83d2-4662-9621-43b13e3e5da5
+
+	/// Texto 'Tether x% del total' para el subtítulo de la tarjeta de volumen.
+	measure 'Sub volumen' = "Tether " & FORMAT([Peso de Tether en el volumen], "0%") & " del total"
+		displayFolder: 3. Concentración
+		lineageTag: 5e8cfd90-5f1d-4d21-8bd5-1919c3a96d78
+
+	/// Color hexadecimal de cada barra del ranking: verde para el activo de mayor capitalización dentro del filtro actual (el botón de categoría elegido) y azul grisáceo para el resto. No depende del nombre del activo. Se aplica con Formato por valor de campo.
+	measure 'Color barra' =
+			
+			VAR actual = [Capitalización total]
+			VAR maximo = MAXX(ALLSELECTED(dim_activo[nombre], dim_activo[coin_id]), [Capitalización total])
+			RETURN
+			    IF(NOT ISBLANK(actual) && actual = maximo, "#4BCC00", "#7D96B5")
+		displayFolder: 4. Ranking
+		lineageTag: e9274f47-7554-41de-9df1-85d0df0e4aad
+
+	/// HTML del bloque de portada: etiqueta, pregunta '¿Cómo está el top 100 hoy?', subtítulo con la dominancia de Bitcoin y titular dinámico con el reparto por categoría (o, con un botón elegido, activos, capital y volumen). Para colocar en el visual HTML Content.
+	measure 'HTML Titular' = ```
+			
+			"<div style='font-family:Segoe UI,Inter,sans-serif'>"
+			& "<div style='font-size:15px;font-weight:600;letter-spacing:.12em;color:#4BCC00'>HALLAZGO DEL DÍA</div>"
+			& "<div style='font-size:84px;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:#FFFFFF'>¿Cómo está</div>"
+			& "<div style='font-size:84px;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:#4BCC00'>el top 100 hoy?</div>"
+			& "<div style='font-size:22px;line-height:1.5;color:#8EA3BE;margin-top:20px'>" & [Subtítulo] & "</div>"
+			& "<div style='font-size:22px;font-weight:700;color:#FFFFFF;margin-top:8px'>" & [Titular dinámico] & "</div></div>"
+			
+			```
+		displayFolder: 5. Textos y HTML
+		lineageTag: 40cda787-3695-4368-8151-f67c54654d17
+
+	/// Cantidad de controles de calidad del lote actual.
+	measure 'Controles totales' = COUNTROWS(fact_controles_actuales)
+		formatString: 0
+		displayFolder: 6. Calidad\Controles
+		lineageTag: fb41d7cd-180d-4822-bf05-bcc9800e4c37
+
+	/// Cantidad de controles cuyo resultado es OK.
+	measure 'Controles OK' = CALCULATE(COUNTROWS(fact_controles_actuales), fact_controles_actuales[resultado] = "OK")
+		formatString: 0
+		displayFolder: 6. Calidad\Controles
+		lineageTag: d0ce9153-d706-457c-9096-061ffb72cf4c
+
+	/// Texto del botón superior de validaciones, por ejemplo 'Calidad 8/8'.
+	measure 'Texto botón calidad' = "Calidad " & [Controles OK] & "/" & [Controles totales]
+		displayFolder: 6. Calidad\Controles
+		lineageTag: f8b931b2-8fce-4fe5-bbaa-5bdf3af0235a
+
+	/// Filas que llegaron de la API en el lote vigente (es_actual = verdadero).
+	measure 'Filas recibidas (lote actual)' = CALCULATE(SUM(fact_ejecuciones[filas_recibidas]), dim_lote[es_actual] = TRUE())
+		formatString: #,0
+		displayFolder: 6. Calidad\Carga
+		lineageTag: 3aa402ef-329a-40d8-a7e4-db162c05da9b
+
+	/// Filas que pasaron los controles de calidad en el lote vigente.
+	measure 'Filas aceptadas (lote actual)' = CALCULATE(SUM(fact_ejecuciones[filas_aceptadas]), dim_lote[es_actual] = TRUE())
+		formatString: #,0
+		displayFolder: 6. Calidad\Carga
+		lineageTag: c3e0faba-e2e3-4965-baca-48ce20df7c11
+
+	/// Filas descartadas por datos inválidos en el lote vigente.
+	measure 'Filas rechazadas (lote actual)' = CALCULATE(SUM(fact_ejecuciones[filas_rechazadas]), dim_lote[es_actual] = TRUE())
+		formatString: #,0
+		displayFolder: 6. Calidad\Carga
+		lineageTag: ad2662a7-9587-4840-a45c-77166d2e8879
+
+	/// Cantidad de lotes publicados hasta hoy (historial de cargas).
+	measure 'Lotes publicados' = COUNTROWS(fact_ejecuciones)
+		formatString: 0
+		displayFolder: 6. Calidad\Carga
+		lineageTag: d2d254ee-af96-4665-8748-43205299b5b4
+
+	/// Identificador (batch_id) del lote vigente.
+	measure 'Lote actual' = CALCULATE(SELECTEDVALUE(dim_lote[batch_id]), dim_lote[es_actual] = TRUE())
+		displayFolder: 6. Calidad\Carga
+		lineageTag: a072fe99-02f6-43a9-a5d1-17090614068b
+
+	/// Estado del lote vigente, por ejemplo PUBLICADO.
+	measure 'Estado lote actual' = CALCULATE(SELECTEDVALUE(dim_lote[estado]), dim_lote[es_actual] = TRUE())
+		displayFolder: 6. Calidad\Carga
+		lineageTag: eab96449-af6d-47d7-a925-bc4896c387a6
+
+	/// Texto del pie del panel de calidad: lotes publicados, modo de datos y entorno de ejecución.
+	measure 'Pie del panel' = [Lotes publicados] & " lotes publicados · modo " & CALCULATE(SELECTEDVALUE(dim_lote[modo_datos]), dim_lote[es_actual] = TRUE()) & " · " & CALCULATE(SELECTEDVALUE(dim_lote[entorno]), dim_lote[es_actual] = TRUE())
+		displayFolder: 6. Calidad\Carga
+		lineageTag: 0de51c9f-1f08-4b54-8b81-3f344f28aedb
+
+	/// HTML completo del panel lateral de validaciones de calidad (plantilla D de Figma, 780 × 1080): fondo propio con esquinas redondeadas de 28 px, encabezado con el título, lote y estado, resumen de filas recibidas/aceptadas/rechazadas, lista de controles con fase, regla, observado/umbral y resultado, y pie con lotes publicados, modo, entorno y fecha del último lote. Para un solo visual HTML Content del tamaño del panel, con fondo del visual desactivado. No dibuja el botón de cierre: va un icono o botón nativo encima, en la esquina superior derecha, con el marcador Panel cerrado.
+	measure 'HTML Panel calidad' =
+			VAR ini = CALCULATE(SELECTEDVALUE(dim_lote[inicio_utc]), dim_lote[es_actual] = TRUE())
+			VAR orig = CALCULATE(SELECTEDVALUE(dim_lote[origen]), dim_lote[es_actual] = TRUE())
+			VAR ultimo = "Último lote: " & FORMAT(ini, "d mmm yyyy", "es-ES") & " · " & FORMAT(ini, "hh:mm") & " UTC · origen " & orig
+			VAR filas =
+			    CONCATENATEX(
+			        fact_controles_actuales,
+			        VAR ok = fact_controles_actuales[resultado] = "OK"
+			        VAR fase = RELATED(dim_control[fase])
+			        VAR colFase = SWITCH(fase, "Bronze", "#F7931A", "Silver", "#BECBDA", "Gold", "#FFE866", "#FFFFFF")
+			        RETURN
+			            "<div class='c'>"
+			            & "<span class='id'>" & RELATED(dim_control[control_id]) & "</span>"
+			            & "<span class='fs' style='color:" & colFase & "'>" & fase & "</span>"
+			            & "<span class='rg'>" & RELATED(dim_control[regla]) & "</span>"
+			            & "<span class='ob'>" & fact_controles_actuales[observados] & " / " & fact_controles_actuales[umbral] & "</span>"
+			            & "<span class='rs " & IF(ok, "ok", "ko") & "'>" & IF(ok, "OK", fact_controles_actuales[resultado]) & "</span></div>",
+			        "",
+			        RELATED(dim_control[control_id]), ASC
+			    )
+			VAR estilo =
+			    "<style>"
+			    & "html,body{margin:0;padding:0;overflow:hidden;background:transparent}"
+			    & ".p{font-family:'Segoe UI',sans-serif;background:#1B232D;border:1px solid #384A61;border-radius:28px;box-sizing:border-box;width:100%;height:100vh;padding:41px;color:#FFFFFF;overflow:hidden}"
+			    & ".hd{display:flex;align-items:center;height:43px;margin-bottom:22px}"
+			    & ".tt{font-size:28px;font-weight:700;letter-spacing:-.01em}"
+			    & ".lt{font-size:14px;color:#8EA3BE;margin-bottom:22px}"
+			    & ".rs3{display:flex;gap:16px;margin-bottom:24px}"
+			    & ".m{flex:1;background:#0D1217;border-radius:20px;padding:18px 22px;box-sizing:border-box}"
+			    & ".mn{font-size:40px;font-weight:700;line-height:1}"
+			    & ".ml{font-size:14px;color:#8EA3BE;margin-top:8px}"
+			    & ".ch{font-size:13px;font-weight:600;letter-spacing:.1em;color:#8EA3BE;margin-bottom:20px}"
+			    & ".c{display:flex;align-items:center;gap:14px;height:48px;box-sizing:border-box;padding:0 18px;margin-bottom:8px;border-radius:16px;background:#212D3B}"
+			    & ".id{background:#384A61;color:#FFFFFF;font-weight:700;font-size:13px;padding:4px 10px;border-radius:8px}"
+			    & ".fs{width:60px;font-weight:600;font-size:14px}"
+			    & ".rg{flex:1;min-width:0;font-size:16px;color:#DFE5EC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+			    & ".ob{font-size:14px;color:#8EA3BE;white-space:nowrap}"
+			    & ".rs{font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px;white-space:nowrap}"
+			    & ".ok{background:rgba(75,204,0,.18);color:#A6EF5F}"
+			    & ".ko{background:rgba(255,119,97,.22);color:#FF7761}"
+			    & ".pie{background:#0D1217;border-radius:18px;padding:16px 22px;margin-top:16px;font-size:14px;line-height:1.5;color:#DFE5EC}"
+			    & ".pie .u{color:#8EA3BE}"
+			    & "</style>"
+			RETURN
+			    estilo
+			    & "<div class='p'>"
+			    & "<div class='hd'><div class='tt'>Validaciones de calidad</div></div>"
+			    & "<div class='lt'>Lote " & [Lote actual] & " · estado " & [Estado lote actual] & "</div>"
+			    & "<div class='rs3'>"
+			    & "<div class='m'><div class='mn'>" & [Filas recibidas (lote actual)] & "</div><div class='ml'>Filas recibidas</div></div>"
+			    & "<div class='m'><div class='mn' style='color:#4BCC00'>" & [Filas aceptadas (lote actual)] & "</div><div class='ml'>Filas aceptadas</div></div>"
+			    & "<div class='m'><div class='mn'>" & [Filas rechazadas (lote actual)] & "</div><div class='ml'>Filas rechazadas</div></div>"
+			    & "</div>"
+			    & "<div class='ch'>" & [Controles totales] & " CONTROLES · BRONZE → SILVER → GOLD</div>"
+			    & filas
+			    & "<div class='pie'><div>" & [Pie del panel] & "</div><div class='u'>" & ultimo & "</div></div>"
+			    & "</div>"
+		displayFolder: 6. Calidad\Panel
+		lineageTag: 8b942f49-524f-4ff7-ae3e-bdf8c84ef3dc
+
+	/// HTML de las tres tarjetas pequeñas (capitalización, volumen y dominancia de Bitcoin) con efecto flip: al pasar el cursor se voltean y muestran qué es el indicador y cómo se calcula. Las tarjetas se reparten el alto del visual a partes iguales (altura de la ventana, con un mínimo de 150 px por tarjeta) y ocupan todo el ancho. Tipografía Segoe UI. Para el visual HTML Content (edición Regular). Los textos del reverso están al inicio, en las variables t1 a t3 y c1 a c3; los tamaños de letra están en las reglas .k .v .s .bt .bx .bc del bloque de estilo.
+	measure 'HTML Tarjetas KPI' =
+			VAR cap = "US$ " & FORMAT(DIVIDE([Capitalización total], 1000000000000), "0.00") & " B"
+			VAR vol = "US$ " & FORMAT(DIVIDE([Volumen 24h], 1000000000), "0.0") & " mil M"
+			VAR dom = FORMAT([Dominancia Bitcoin], "0.0%")
+			VAR t1 = "Tamaño del mercado: precio × unidades en circulación. No es dinero guardado, sino lo que valdrían todas las unidades al precio de hoy."
+			VAR c1 = "Precio × unidades en circulación"
+			VAR t2 = "Dinero que realmente cambió de manos en 24 horas. Mide actividad, no tamaño: un activo enorme puede moverse poco."
+			VAR c2 = "Suma del volumen negociado en 24 h"
+			VAR t3 = "Parte del mercado que pertenece a Bitcoin. Cuanto más alta, más concentrado está el dinero en un solo activo. No cambia con el botón de categoría."
+			VAR c3 = "Capitalización de Bitcoin ÷ capitalización de los 100 activos"
+			VAR estilo =
+			    "<style>"
+			    & "html,body{margin:0;padding:0;width:100%;overflow:hidden}"
+			    & ".w{font-family:'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;display:flex;flex-direction:column;gap:16px;width:100%;height:100vh;min-height:482px;box-sizing:border-box}"
+			    & ".fc{perspective:1200px;flex:1 1 0;min-height:150px;width:100%;position:relative}"
+			    & ".fi{position:relative;width:100%;height:100%;transition:transform .6s ease;transform-style:preserve-3d;will-change:transform}"
+			    & ".fc:hover .fi{transform:rotateY(180deg)}"
+			    & ".ff,.fb{position:absolute;top:0;left:0;width:100%;height:100%;box-sizing:border-box;border-radius:24px;backface-visibility:hidden;-webkit-backface-visibility:hidden}"
+			    & ".ff{background:#1B232D;padding:20px 32px;display:flex;flex-direction:column;justify-content:center;gap:6px;transform:translateZ(0.1px)}"
+			    & ".fb{background:#212D3B;border:1px solid;transform:rotateY(180deg) translateZ(0.1px);padding:12px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px}"
+			    & ".k{font-size:16px;font-weight:600;letter-spacing:.1em;color:#8EA3BE}"
+			    & ".v{font-size:50px;font-weight:700;letter-spacing:-.02em;line-height:1.1}"
+			    & ".s{font-size:18px;color:#8EA3BE}"
+			    & ".bt{font-size:16px;font-weight:700;letter-spacing:.1em}"
+			    & ".bx{font-size:17px;line-height:1.3;color:#DFE5EC}"
+			    & ".bc{font-size:15px;line-height:1.25;color:#8EA3BE}"
+			    & "</style>"
+			VAR tarjeta1 =
+			    "<div class='fc'><div class='fi'><div class='ff'><div class='k'>CAPITALIZACIÓN TOTAL</div><div class='v' style='color:#4BCC00'>" & cap & "</div><div class='s'>billones · " & [Activos] & " activos</div></div>"
+			    & "<div class='fb' style='border-color:#4BCC00'><div class='bt' style='color:#4BCC00'>¿QUÉ ES?</div><div class='bx'>" & t1 & "</div><div class='bc'>Cálculo: " & c1 & "</div></div></div></div>"
+			VAR tarjeta2 =
+			    "<div class='fc'><div class='fi'><div class='ff'><div class='k'>VOLUMEN 24 H</div><div class='v' style='color:#2FB3FC'>" & vol & "</div><div class='s'>" & [Sub volumen] & "</div></div>"
+			    & "<div class='fb' style='border-color:#2FB3FC'><div class='bt' style='color:#2FB3FC'>¿QUÉ ES?</div><div class='bx'>" & t2 & "</div><div class='bc'>Cálculo: " & c2 & "</div></div></div></div>"
+			VAR tarjeta3 =
+			    "<div class='fc'><div class='fi'><div class='ff'><div class='k'>DOMINANCIA DE BITCOIN</div><div class='v' style='color:#F7931A'>" & dom & "</div><div class='s'>" & [Sub dominancia] & "</div></div>"
+			    & "<div class='fb' style='border-color:#F7931A'><div class='bt' style='color:#F7931A'>¿QUÉ ES?</div><div class='bx'>" & t3 & "</div><div class='bc'>Cálculo: " & c3 & "</div></div></div></div>"
+			RETURN
+			    estilo & "<div class='w'>" & tarjeta1 & tarjeta2 & tarjeta3 & "</div>"
+		displayFolder: 5. Textos y HTML
+		lineageTag: f722682e-e983-47ca-8806-527d4d861f09
+
+	/// Color hexadecimal de las etiquetas de datos del ranking. Reutiliza Color barra: verde para el activo de mayor capitalización y azul grisáceo para el resto, igual que su barra. Se aplica con Formato por valor de campo.
+	measure 'Color etiqueta' = [Color barra]
+		displayFolder: 4. Ranking
+		lineageTag: 7f7a0c90-202a-4e01-8160-f908c156d863
+
+	/// HTML del termómetro según la plantilla A de Figma: etiqueta 'ACTIVOS EN CAÍDA · 24 H', cifra de 128 px en coral con 'de N' al lado, barra rectangular de tres tramos (caen coral, suben verde, sin cambio azul grisáceo) y leyenda con punto de color. Al pasar el cursor sobre cualquier parte de la tarjeta aparece un panel con, para los que caen y los que suben, los 3 mayores por variación porcentual y los 3 mayores por impacto en dólares (cambio estimado de capitalización), más la explicación de la variación media. Tarjeta de 640 × 299, fondo #1B232D, esquinas de 28 px, tipografía Segoe UI. Todo sigue el botón de categoría. Para el visual HTML Content (edición Regular).
+	measure 'HTML Termómetro' =
+			VAR n = COALESCE([Activos], 0)
+			VAR caen = COALESCE([Activos en caída], 0)
+			VAR suben = COALESCE([Activos al alza], 0)
+			VAR igual = COALESCE([Activos sin cambio], 0)
+			VAR vm = [Variación media 24h]
+			VAR colVm = IF(vm < 0, "#FF7761", IF(vm > 0, "#4BCC00", "#8EA3BE"))
+			VAR signo = IF(vm < 0, UNICHAR(8722), IF(vm > 0, "+", ""))
+			VAR txtVm = IF(ISBLANK(vm), "s/d", signo & FORMAT(ABS(vm), "0.00%"))
+			VAR tabla =
+			    ADDCOLUMNS(
+			        SELECTCOLUMNS(
+			            fact_mercado_actual,
+			            "nom", RELATED(dim_activo[nombre]),
+			            "clave", fact_mercado_actual[activo_key],
+			            "pct", fact_mercado_actual[variacion_24h_pct],
+			            "cap", fact_mercado_actual[capitalizacion_usd]
+			        ),
+			        "delta", IF([pct] > -100, [cap] - DIVIDE([cap], 1 + [pct] / 100), BLANK())
+			    )
+			VAR pctCaen =
+			    CONCATENATEX(
+			        TOPN(3, FILTER(tabla, [pct] < 0), [pct], ASC, [clave], ASC),
+			        "<div class='r'><span>" & SUBSTITUTE(SUBSTITUTE([nom], "&", "&amp;"), "<", "&lt;") & "</span><b style='color:#FF7761'>" & UNICHAR(8722) & FORMAT(ABS([pct]) / 100, "0.00%") & "</b></div>",
+			        "", [pct], ASC, [clave], ASC
+			    )
+			VAR pctSuben =
+			    CONCATENATEX(
+			        TOPN(3, FILTER(tabla, [pct] > 0), [pct], DESC, [clave], ASC),
+			        "<div class='r'><span>" & SUBSTITUTE(SUBSTITUTE([nom], "&", "&amp;"), "<", "&lt;") & "</span><b style='color:#4BCC00'>+" & FORMAT([pct] / 100, "0.00%") & "</b></div>",
+			        "", [pct], DESC, [clave], ASC
+			    )
+			VAR impCaen =
+			    CONCATENATEX(
+			        TOPN(3, FILTER(tabla, [delta] < 0), [delta], ASC, [clave], ASC),
+			        VAR a = ABS([delta])
+			        RETURN "<div class='r'><span>" & SUBSTITUTE(SUBSTITUTE([nom], "&", "&amp;"), "<", "&lt;") & "</span><b style='color:#FF7761'>" & UNICHAR(8722) & IF(a >= 1000000000, FORMAT(a / 1000000000, "0.0") & " mil M", FORMAT(a / 1000000, "0") & " M") & "</b></div>",
+			        "", [delta], ASC, [clave], ASC
+			    )
+			VAR impSuben =
+			    CONCATENATEX(
+			        TOPN(3, FILTER(tabla, [delta] > 0), [delta], DESC, [clave], ASC),
+			        VAR a = ABS([delta])
+			        RETURN "<div class='r'><span>" & SUBSTITUTE(SUBSTITUTE([nom], "&", "&amp;"), "<", "&lt;") & "</span><b style='color:#4BCC00'>+" & IF(a >= 1000000000, FORMAT(a / 1000000000, "0.0") & " mil M", FORMAT(a / 1000000, "0") & " M") & "</b></div>",
+			        "", [delta], DESC, [clave], ASC
+			    )
+			VAR ninguno = "<div class='r'><span>Ninguno</span></div>"
+			VAR estilo =
+			    "<style>"
+			    & "html,body{margin:0;padding:0;width:100%;overflow:hidden}"
+			    & ".w{position:relative;font-family:'Segoe UI',sans-serif;background:#1B232D;border-radius:28px;box-sizing:border-box;width:100%;height:100vh;min-height:299px;padding:36px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px}"
+			    & ".k{font-size:14px;font-weight:600;letter-spacing:.1em;line-height:1.2;color:#8EA3BE}"
+			    & ".top{display:flex;align-items:flex-end;gap:14px}"
+			    & ".n{font-size:128px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#FF7761}"
+			    & ".t{font-size:28px;font-weight:600;line-height:1.2;color:#BECBDA}"
+			    & ".bar{display:flex;gap:4px;height:16px;width:100%}"
+			    & ".bar>div{border-radius:0;min-width:8px}"
+			    & ".leg{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 18px;font-size:15px;line-height:1.2;color:#8EA3BE;white-space:nowrap}"
+			    & ".leg b{color:#DFE5EC;font-weight:700}"
+			    & ".d{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px}"
+			    & ".tip{position:absolute;top:0;left:0;width:100%;height:100%;box-sizing:border-box;border-radius:28px;background:#212D3B;border:1px solid #384A61;padding:20px 32px;display:flex;flex-direction:column;justify-content:center;gap:10px;opacity:0;visibility:hidden;transition:opacity .2s ease;pointer-events:none}"
+			    & ".w:hover .tip{opacity:1;visibility:visible}"
+			    & ".cols{display:flex;gap:28px}"
+			    & ".col{flex:1;min-width:0}"
+			    & ".ch{font-size:15px;font-weight:700;letter-spacing:.1em;margin-bottom:2px}"
+			    & ".sub{font-size:12px;font-weight:600;letter-spacing:.08em;color:#8EA3BE;margin:6px 0 2px}"
+			    & ".r{display:flex;justify-content:space-between;gap:10px;font-size:15px;line-height:1.35;color:#DFE5EC}"
+			    & ".r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}"
+			    & ".r b{white-space:nowrap}"
+			    & ".ex{font-size:13.5px;line-height:1.3;color:#8EA3BE}"
+			    & ".ex b{color:#DFE5EC}"
+			    & "</style>"
+			VAR barra =
+			    "<div class='bar'>"
+			    & IF(caen > 0, "<div style='flex:" & caen & " 1 0;background:#FF7761'></div>", "")
+			    & IF(suben > 0, "<div style='flex:" & suben & " 1 0;background:#4BCC00'></div>", "")
+			    & IF(igual > 0, "<div style='flex:" & igual & " 1 0;background:#4A6382'></div>", "")
+			    & "</div>"
+			VAR leyenda =
+			    "<div class='leg'>"
+			    & "<span><i class='d' style='background:#FF7761'></i><b>" & caen & "</b> " & IF(caen = 1, "baja", "bajan") & "</span>"
+			    & "<span><i class='d' style='background:#4BCC00'></i><b>" & suben & "</b> " & IF(suben = 1, "sube", "suben") & "</span>"
+			    & "<span><i class='d' style='background:#4A6382'></i><b>" & igual & "</b> sin cambio</span>"
+			    & "<span>Variación media <b style='color:" & colVm & "'>" & txtVm & "</b></span>"
+			    & "</div>"
+			VAR tooltip =
+			    "<div class='tip'>"
+			    & "<div class='cols'>"
+			    & "<div class='col'><div class='ch' style='color:#FF7761'>MÁS CAEN</div>"
+			    & "<div class='sub'>POR VARIACIÓN %</div>" & IF(pctCaen = "", ninguno, pctCaen)
+			    & "<div class='sub'>POR IMPACTO (US$)</div>" & IF(impCaen = "", ninguno, impCaen) & "</div>"
+			    & "<div class='col'><div class='ch' style='color:#4BCC00'>MÁS SUBEN</div>"
+			    & "<div class='sub'>POR VARIACIÓN %</div>" & IF(pctSuben = "", ninguno, pctSuben)
+			    & "<div class='sub'>POR IMPACTO (US$)</div>" & IF(impSuben = "", ninguno, impSuben) & "</div>"
+			    & "</div>"
+			    & "<div class='ex'><b>Variación</b> = cuánto cambió el precio del activo. <b>Impacto</b> = cuánto dinero ganó o perdió su capitalización (estimado desde el % de 24 h). <b>Variación media</b> = promedio simple de los " & n & " activos, sin ponderar por tamaño.</div>"
+			    & "</div>"
+			RETURN
+			    estilo
+			    & "<div class='w'>"
+			    & "<div class='k'>ACTIVOS EN CAÍDA · 24 H</div>"
+			    & "<div class='top'><div class='n'>" & caen & "</div><div class='t'>de " & n & "</div></div>"
+			    & barra
+			    & leyenda
+			    & tooltip
+			    & "</div>"
+		displayFolder: 5. Textos y HTML
+		lineageTag: 77a24af2-ec9c-4d04-835d-0c1a4f5e861a
+
+	/// HTML del tooltip del gráfico de barras del ranking. Va en una página de tooltip (320 × 240) dentro de un visual HTML Content. Para el activo bajo el cursor muestra nombre y símbolo, variación 24 h, rotación diaria (volumen ÷ capitalización) con una etiqueta de actividad, capitalización y volumen. Diseño compacto (unos 170 px de contenido), sin borde propio. Umbrales de la etiqueta: 20 % o más muy activo, 5 % activo, 0.5 % moderado, menos poca negociación; están en la variable etiqueta.
+	measure 'HTML Tooltip ranking' =
+			VAR nom = SELECTEDVALUE(dim_activo[nombre])
+			VAR sim = UPPER(SELECTEDVALUE(dim_activo[simbolo], ""))
+			VAR cap = [Capitalización total]
+			VAR vol = [Volumen 24h]
+			VAR pct = [Variación media 24h]
+			VAR rot = DIVIDE(vol, cap)
+			VAR capTxt =
+			    IF(cap >= 1000000000000, "US$ " & FORMAT(cap / 1000000000000, "0.00") & " B",
+			    IF(cap >= 1000000000, "US$ " & FORMAT(cap / 1000000000, "0.0") & " mil M",
+			    IF(cap >= 1000000, "US$ " & FORMAT(cap / 1000000, "0") & " M",
+			    "US$ " & FORMAT(cap / 1000, "0") & " mil")))
+			VAR volTxt =
+			    IF(vol >= 1000000000000, "US$ " & FORMAT(vol / 1000000000000, "0.00") & " B",
+			    IF(vol >= 1000000000, "US$ " & FORMAT(vol / 1000000000, "0.0") & " mil M",
+			    IF(vol >= 1000000, "US$ " & FORMAT(vol / 1000000, "0") & " M",
+			    "US$ " & FORMAT(vol / 1000, "0") & " mil")))
+			VAR rotTxt = IF(rot >= 0.001, FORMAT(rot, "0.0%"), FORMAT(rot, "0.0000%"))
+			VAR etiqueta =
+			    SWITCH(TRUE(),
+			        rot >= 0.2, "MUY ACTIVO",
+			        rot >= 0.05, "ACTIVO",
+			        rot >= 0.005, "MODERADO",
+			        "POCA NEGOCIACIÓN")
+			VAR colEtiqueta =
+			    SWITCH(etiqueta, "MUY ACTIVO", "#A6EF5F", "ACTIVO", "#A6EF5F", "MODERADO", "#8EA3BE", "#FFE866")
+			VAR colPct = IF(pct < 0, "#FF7761", IF(pct > 0, "#4BCC00", "#8EA3BE"))
+			VAR signo = IF(pct < 0, UNICHAR(8722), IF(pct > 0, "+", ""))
+			VAR pctTxt = IF(ISBLANK(pct), "s/d", signo & FORMAT(ABS(pct), "0.00%"))
+			VAR estilo =
+			    "<style>"
+			    & "html,body{margin:0;padding:0;overflow:hidden;background:#212D3B}"
+			    & ".w{font-family:'Segoe UI',sans-serif;background:#212D3B;box-sizing:border-box;width:100%;height:100vh;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:9px}"
+			    & ".h{display:flex;align-items:center;justify-content:space-between;gap:10px}"
+			    & ".nm{font-size:18px;font-weight:700;line-height:1.2;color:#DFE5EC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+			    & ".sy{font-size:11px;font-weight:600;color:#8EA3BE;background:#384A61;border-radius:6px;padding:1px 7px;margin-left:8px;white-space:nowrap}"
+			    & ".pc{font-size:15px;font-weight:700;white-space:nowrap}"
+			    & ".l{font-size:10px;font-weight:600;letter-spacing:.1em;line-height:1.3;color:#8EA3BE}"
+			    & ".big{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1.05;color:#2FB3FC}"
+			    & ".s{font-size:12px;line-height:1.3;color:#8EA3BE}"
+			    & ".g{display:flex;gap:14px;border-top:1px solid #384A61;padding-top:9px}"
+			    & ".g>div{flex:1;min-width:0}"
+			    & ".v{font-size:14px;font-weight:600;line-height:1.3;color:#DFE5EC;white-space:nowrap}"
+			    & "</style>"
+			RETURN
+			    IF(
+			        ISBLANK(nom),
+			        estilo & "<div class='w' style='align-items:center'><div class='s'>Pasa el cursor sobre una barra</div></div>",
+			        estilo
+			            & "<div class='w'>"
+			            & "<div class='h'><div style='display:flex;align-items:center;min-width:0'><span class='nm'>" & SUBSTITUTE(SUBSTITUTE(nom, "&", "&amp;"), "<", "&lt;") & "</span><span class='sy'>" & sim & "</span></div><span class='pc' style='color:" & colPct & "'>" & pctTxt & "</span></div>"
+			            & "<div><div class='l'>ROTACIÓN 24 H · <span style='color:" & colEtiqueta & "'>" & etiqueta & "</span></div><div class='big'>" & rotTxt & "</div><div class='s'>de su capitalización se negoció en 24 h</div></div>"
+			            & "<div class='g'><div><div class='l'>CAPITALIZACIÓN</div><div class='v'>" & capTxt & "</div></div><div><div class='l'>VOLUMEN 24 H</div><div class='v'>" & volTxt & "</div></div></div>"
+			            & "</div>"
+			    )
+		displayFolder: 4. Ranking
+		lineageTag: d9e96a27-7e78-453c-96e5-765aa59dbf96
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Origen = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Columna 1" = _t]),
+				    #"Columnas quitadas" = Table.RemoveColumns(Origen,{"Columna 1"})
+				in
+				  #"Columnas quitadas"
+
+	annotation PBI_ResultType = Table
+

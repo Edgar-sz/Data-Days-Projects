@@ -1,0 +1,138 @@
+/// Foto actual del mercado. Una fila por activo y lote, con precio, capitalización y volumen en USD, variación 24 h, ranking en la fuente, posición y participación dentro de la muestra, y la fecha de actualización de la fuente.
+table fact_mercado_actual
+	lineageTag: 33defd39-bfae-4775-9e1c-44bba3cf4bf7
+
+	/// Clave hacia dim_activo. Está oculta.
+	column activo_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: cd1365ee-82ce-4ca9-b027-d85df9ab2cc5
+		summarizeBy: none
+		sourceColumn: activo_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave hacia dim_lote. Está oculta.
+	column lote_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e4a6046a-2c25-4a81-a7fb-b19cc3ea5e95
+		summarizeBy: none
+		sourceColumn: lote_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave hacia dim_fecha.
+	column fecha_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 2263fa1a-4c4a-446c-9f59-93e86a0e78c6
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Precio de una unidad del activo, en USD. No se suma: usa promedios o el valor de un activo.
+	column precio_usd
+		dataType: double
+		lineageTag: 64acf321-0500-4473-bdeb-4e1e668911ad
+		summarizeBy: none
+		sourceColumn: precio_usd
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Tamaño del activo: precio por unidades en circulación, en USD.
+	column capitalizacion_usd
+		dataType: double
+		lineageTag: c6211e73-78b0-470b-b108-8b1e6ff1ffc8
+		summarizeBy: none
+		sourceColumn: capitalizacion_usd
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Dinero negociado con el activo en las últimas 24 horas, en USD.
+	column volumen_24h_usd
+		dataType: double
+		lineageTag: 37810a3a-27a8-4e93-b52e-27650cee3c2f
+		summarizeBy: none
+		sourceColumn: volumen_24h_usd
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Cambio del precio en 24 h, en puntos porcentuales: -1.5 significa -1.5 %. No se suma.
+	column variacion_24h_pct
+		dataType: double
+		lineageTag: 61372c04-ab25-48b5-b6c1-c878ef32475b
+		summarizeBy: none
+		sourceColumn: variacion_24h_pct
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Puesto del activo según CoinGecko (1 = mayor capitalización).
+	column ranking_fuente
+		dataType: int64
+		formatString: 0
+		lineageTag: ad1a8218-12ec-494f-9b2b-a08948ea6f0b
+		summarizeBy: none
+		sourceColumn: ranking_fuente
+
+		annotation SummarizationSetBy = User
+
+	/// Puesto del activo dentro de los 100 de la muestra, calculado por capitalización en Gold.
+	column posicion_muestra
+		dataType: int64
+		formatString: 0
+		lineageTag: faa01542-f1b0-464b-8db2-b236198218d6
+		summarizeBy: none
+		sourceColumn: posicion_muestra
+
+		annotation SummarizationSetBy = User
+
+	/// Fracción de la capitalización total de la muestra que representa el activo. Suman 1 (100 %).
+	column participacion_muestra
+		dataType: double
+		lineageTag: d6bdc85b-dad7-44b9-9f16-1064083ffdb9
+		summarizeBy: none
+		sourceColumn: participacion_muestra
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Momento en que CoinGecko actualizó el dato de ese activo (UTC).
+	column actualizado_fuente_utc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 7c3179a9-c118-477d-985a-f32c1d456b43
+		summarizeBy: none
+		sourceColumn: actualizado_fuente_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_mercado_actual = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-a3uslx4xnkredhxnlziiairc2a.datawarehouse.fabric.microsoft.com", "LH01_ObservatorioCripto"),
+				    gold_fact_mercado_actual = Origen{[Schema="gold",Item="fact_mercado_actual"]}[Data]
+				in
+				    gold_fact_mercado_actual
+
+	annotation PBI_ResultType = Table
+

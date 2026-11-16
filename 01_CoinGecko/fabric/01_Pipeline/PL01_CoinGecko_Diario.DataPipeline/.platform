@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "PL01_CoinGecko_Diario",
+    "description": "Ejecuta Bronze, Silver y Gold en orden y avisa por correo si una etapa falla"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "0601e775-8c05-96a4-466b-ae4ac2c7fcb8"
+  }
+}

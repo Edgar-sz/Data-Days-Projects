@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "NB02_CoinGecko_Silver",
+    "description": "Tipa, valida y clasifica los datos; separa filas aceptadas y rechazadas (capa Silver)"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "088d9478-00ac-a661-4d34-29bcd5b2b8ea"
+  }
+}

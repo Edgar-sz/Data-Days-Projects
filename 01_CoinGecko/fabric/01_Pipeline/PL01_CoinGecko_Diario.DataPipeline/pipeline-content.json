@@ -1,0 +1,200 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Bronze</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: Cripto_Snapshot_01<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla (Lima): @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Fallida (NB01_Bronze)<br>\nSilver: No ejecutada<br>\nGold: No ejecutada<br>\nModelo semántico: No ejecutada</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('NB01_Bronze').error.message, 0, min(length(activity('NB01_Bronze').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nNo se ingestó el snapshot de esta ejecución. Ninguna capa ni el modelo semántico cuentan con datos nuevos.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace Cripto_Snapshot_01, buscar el Run ID y revisar la salida del notebook NB01_Bronze.</p>\n\n</div>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "❌ [Cripto_Snapshot_01] Falla en etapa Bronze · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Bronze",
+        "dependsOn": [
+          {
+            "activity": "NB01_Bronze",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "088d9478-00ac-a661-4d34-29bcd5b2b8ea",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "NB02_Silver",
+        "dependsOn": [
+          {
+            "activity": "NB01_Bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "b0d9af24-b7ba-804a-4994-651576f4da33",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "NB03_Gold",
+        "dependsOn": [
+          {
+            "activity": "NB02_Silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "c531f3bd-2ad8-80fd-4812-9096245a32b1",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "replay_path": {
+              "value": "",
+              "type": "string"
+            },
+            "top_n": {
+              "value": "100",
+              "type": "int"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "NB01_Bronze",
+        "dependsOn": []
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Silver</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: Cripto_Snapshot_01<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla (Lima): @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Fallida (NB02_Silver)<br>\nGold: No ejecutada<br>\nModelo semántico: No ejecutada</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('NB02_Silver').error.message, 0, min(length(activity('NB02_Silver').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nBronze se cargó correctamente. Silver, Gold y el modelo semántico permanecen sin actualizar.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace Cripto_Snapshot_01, buscar el Run ID y revisar la salida del notebook NB02_Silver.</p>\n\n</div>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "❌ [Cripto_Snapshot_01] Falla en etapa Silver · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Silver",
+        "dependsOn": [
+          {
+            "activity": "NB02_Silver",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#1e8449;margin-bottom:4px;\">Ejecución completada correctamente</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: Cripto_Snapshot_01<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nFinalizó (Lima): @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nDuración total: @{div(sub(ticks(utcnow()),ticks(pipeline().TriggerTime)),600000000)} min<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Completada<br>\nGold: Completada<br>\nModelo semántico: Completada</p>\n\n<p><b>RESULTADO</b><br>\nLas tres capas y el modelo semántico se actualizaron con el snapshot de esta ejecución.</p>\n\n</div>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "✅ [Cripto_Snapshot_01] Ejecución completada · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Exito_Gold",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "NB03_Gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Gold</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: Cripto_Snapshot_01<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla (Lima): @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Completada<br>\nGold: Fallida (NB_03_Gold)<br>\nModelo semántico: No ejecutada</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('NB03_Gold').error.message, 0, min(length(activity('NB03_Gold').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nBronze y Silver se cargaron correctamente. Gold y el modelo semántico permanecen sin actualizar, por lo que los reportes muestran datos de la ejecución anterior.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace Cripto_Snapshot_01, buscar el Run ID y revisar la salida del notebook NB_03_Gold.</p>\n\n</div>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "❌ [Cripto_Snapshot_01] Falla en etapa Gold · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Gold",
+        "dependsOn": [
+          {
+            "activity": "NB03_Gold",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

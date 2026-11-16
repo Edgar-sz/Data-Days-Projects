@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "PBI_CoinGecko",
+    "description": "Modelo semántico en estrella con las medidas del tablero"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "69decb5f-110e-8cd1-4c98-51819a5dbaf6"
+  }
+}
