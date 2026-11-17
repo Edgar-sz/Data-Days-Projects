@@ -693,6 +693,58 @@ summary = {"batch_id":batch_id,"export_base":export_base,"received":received,"ac
 
 # CELL ********************
 
+# PASO: sincronizar el punto de conexión SQL
+# El modelo, en modo Importar, lee Gold por el punto de conexión SQL del Lakehouse.
+# Ese punto sincroniza las tablas Delta con retraso: sin forzarlo, el refresco puede
+# terminar Completed y cargar el lote anterior. Se exige que cada tabla Gold conste
+# sincronizada después de publicar este lote (published).
+context = notebookutils.runtime.context
+workspace_id = context["currentWorkspaceId"]
+lakehouse_id = context["defaultLakehouseId"]
+pbi_headers = {"Authorization":"Bearer " + notebookutils.credentials.getToken("pbi")}
+fabric_url = f"https://api.fabric.microsoft.com/v1/workspaces/{workspace_id}"
+lakehouse = requests.get(f"{fabric_url}/lakehouses/{lakehouse_id}",headers=pbi_headers,timeout=60)
+lakehouse.raise_for_status()
+sql_endpoint_id = lakehouse.json()["properties"]["sqlEndpointProperties"]["id"]
+sync_url = f"{fabric_url}/sqlEndpoints/{sql_endpoint_id}/refreshMetadata"
+gold_tables = ["gold."+name for name in tables]
+for attempt in range(5):
+    sync = requests.post(sync_url,headers=pbi_headers,json={},timeout=120)
+    sync.raise_for_status()
+    if sync.status_code==202:
+        # Operación larga: esperar su final y leer el resultado.
+        operation_url = sync.headers["Location"]
+        for _ in range(60):
+            time.sleep(int(sync.headers.get("Retry-After",5)))
+            operation = requests.get(operation_url,headers=pbi_headers,timeout=60)
+            operation.raise_for_status()
+            if operation.json()["status"] in ["Succeeded","Failed"]: break
+        if operation.json()["status"]!="Succeeded":
+            raise RuntimeError("Sincronización del punto de conexión SQL: "+operation.text)
+        sync = requests.get(operation_url+"/result",headers=pbi_headers,timeout=60)
+        sync.raise_for_status()
+    synced = {t["tableName"]:t for t in sync.json()["value"]}
+    failed = [n for n in gold_tables if synced.get(n,{}).get("status")=="Failure"]
+    if failed:
+        raise RuntimeError("Tablas sin sincronizar en el punto de conexión SQL: "+", ".join(failed))
+    stale = [n for n in gold_tables
+             if (synced.get(n,{}).get("lastSuccessfulSyncDateTime") or "")[:19] < published[:19]]
+    if not stale: break
+    time.sleep(15)
+else:
+    raise TimeoutError("El punto de conexión SQL aún no refleja el lote: "+", ".join(stale))
+print("Punto de conexión SQL sincronizado:",sql_endpoint_id)
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 context = notebookutils.runtime.context
 workspace_id = context["currentWorkspaceId"]
 pbi_headers = {"Authorization":"Bearer " + notebookutils.credentials.getToken("pbi")}
