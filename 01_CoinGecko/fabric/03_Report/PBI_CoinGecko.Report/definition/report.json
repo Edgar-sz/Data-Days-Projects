@@ -84,8 +84,10 @@
     }
   ],
   "settings": {
+    "isPersistentUserStateDisabled": true,
+    "hideVisualContainerHeader": true,
     "useStylableVisualContainerHeader": true,
-    "exportDataMode": "AllowSummarized",
+    "exportDataMode": "None",
     "defaultDrillFilterOtherVisuals": true,
     "allowChangeFilterTypes": true,
     "useEnhancedTooltips": true,
