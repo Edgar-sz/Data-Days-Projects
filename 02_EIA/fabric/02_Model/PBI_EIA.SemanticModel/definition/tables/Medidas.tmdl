@@ -1026,7 +1026,7 @@ table Medidas
 		displayFolder: 6. HTML
 		lineageTag: e18622c6-8c83-48db-9c7e-976e30f8bc6b
 
-	/// Las dos tarjetas flotantes con perspectiva del lado derecho del banner, con datos complementarios del sector.
+	/// Las dos tarjetas planas del lado derecho del banner, con datos complementarios del sector. Lleva un margen interno (14, 26, 40 y 26 px) para que la sombra no se corte en el borde del visual.
 	measure 'HTML Tarjetas flotantes' =
 			VAR _s = [Sector seleccionado]
 			VAR _ac = SWITCH ( _s, "gas", "#2E9BE6", "pet", "#EF6A3A", "#F2B01E" )
@@ -1034,7 +1034,7 @@ table Medidas
 			VAR _tint = SWITCH ( _s, "gas", "#D9EDFC", "pet", "#FBE0D4", "#FFF1CC" )
 			VAR _tint2 = SWITCH ( _s, "gas", "#F1F8FF", "pet", "#FFF5F0", "#FFFAEB" )
 			RETURN
-			    "<style>*{box-sizing:border-box;margin:0;padding:0}body,div{font-family:'Segoe UI','Segoe UI Variable',sans-serif;color:#0F1E33}.chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}.chip.up{color:#15803D;background:#DCF5E6}.chip.dn{color:#BE2F4A;background:#FDE3E8}.chip.nt{color:#4F6078;background:#EEF2F7}.flot{width:300px;margin:0 0 24px auto;background:rgba(255,255,255,.86);border:1px solid #fff;border-radius:22px;padding:16px 18px;display:flex;gap:14px;align-items:center;box-shadow:0 22px 40px -26px rgba(15,30,51,.55);transform:perspective(900px) rotateY(-14deg) rotateX(3deg);transition:transform .6s}.flot:hover{transform:perspective(900px) rotateY(0) rotateX(0)}.ico{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:none}.ico svg{width:22px;height:22px}.t1{font-size:11px;color:#4F6078;font-weight:600;letter-spacing:.3px}.t2{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-top:1px}.t3{font-size:11.5px;color:#4F6078;margin-top:2px}.caja{padding:10px 14px 0 0}</style><div class='caja'>"
+			    "<style>*{box-sizing:border-box;margin:0;padding:0}body,div{font-family:'Segoe UI','Segoe UI Variable',sans-serif;color:#0F1E33}.chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}.chip.up{color:#15803D;background:#DCF5E6}.chip.dn{color:#BE2F4A;background:#FDE3E8}.chip.nt{color:#4F6078;background:#EEF2F7}.flot{width:300px;margin:0 0 24px auto;background:rgba(255,255,255,.86);border:1px solid #fff;border-radius:22px;padding:16px 18px;display:flex;gap:14px;align-items:center;box-shadow:0 22px 40px -26px rgba(15,30,51,.55)}.ico{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:none}.ico svg{width:22px;height:22px}.t1{font-size:11px;color:#4F6078;font-weight:600;letter-spacing:.3px}.t2{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-top:1px}.t3{font-size:11.5px;color:#4F6078;margin-top:2px}.caja{padding:14px 26px 40px 26px}</style><div class='caja'>"
 			    & SWITCH (
 			        _s,
 			        "gas", "<div class='flot'><div class='ico' style='background:" & _tint & ";color:" & _act & "'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M13 2 4 14h7l-1 8 9-12h-7z'/></svg></div><div><div class='t1'>Gas usado para generar electricidad</div><div class='t2'>" & FORMAT ( [Gas para generar electricidad], "0.0%" ) & "</div><div class='t3'>" & "del consumo de " & FORMAT ( [Fecha del consumo de gas], "mmmm yyyy", "es-ES" ) & "</div></div></div>"
