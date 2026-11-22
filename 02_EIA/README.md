@@ -8,6 +8,10 @@ Tablero de una página que responde **¿cómo están hoy la electricidad, el gas
 
 *El tablero con el sector Petróleo seleccionado: precio del WTI y del Brent, crudo almacenado, precios en el surtidor e inventarios. El banner, los indicadores, el gráfico y las barras cambian al elegir Electricidad o Gas natural.*
 
+![Panel de frescura de los datos abierto sobre el tablero](docs/panel_frescura.png)
+
+*El panel de frescura, que se abre desde el botón «Frescura 9/9»: el último dato de cada una de las 9 tablas Silver, los días desde ese dato y si está al día según su frecuencia (diaria, semanal o mensual).*
+
 ## Qué muestra el tablero
 | Bloque | Contenido |
 |---|---|
@@ -89,7 +93,7 @@ Esquema en estrella en modo **Importar**, con origen en el punto de conexión SQ
 │   ├── 02_Model/       Modelo semántico (formato TMDL)
 │   └── 03_Report/      Informe (formato PBIR)
 ├── notebooks/          Los 2 notebooks en formato .ipynb, listos para importar
-├── docs/               Captura del tablero
+├── docs/               Capturas del tablero y del panel de frescura
 └── powerbi/
     ├── PBI_EIA.pbix
     ├── paleta_colores.json
