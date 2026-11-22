@@ -1,0 +1,608 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "JsonSource",
+            "formatSettings": {
+              "type": "JsonReadSettings"
+            },
+            "storeSettings": {
+              "type": "LakehouseReadSettings",
+              "recursive": false,
+              "enablePartitionDiscovery": false
+            }
+          },
+          "datasetSettings": {
+            "type": "Json",
+            "typeProperties": {
+              "location": {
+                "type": "LakehouseLocation",
+                "folderPath": "config",
+                "fileName": "eia_config.json"
+              }
+            },
+            "schema": {},
+            "linkedService": {
+              "name": "LH_EIA",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "76f18ffe-a10e-b87d-4c3f-1285696c8c72",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Files"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "firstRowOnly": true
+        },
+        "policy": {
+          "timeout": "0.00:10:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": true
+        },
+        "name": "Leer_api_key",
+        "dependsOn": []
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": false,
+          "batchCount": 2,
+          "items": {
+            "value": "@pipeline().parameters.datasets",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "RestSource",
+                  "requestMethod": "GET",
+                  "paginationRules": {
+                    "QueryParameters.{offset}": "RANGE:0:10000000:5000",
+                    "EndCondition:$.response.data": "Empty"
+                  },
+                  "httpRequestTimeout": "00:03:00",
+                  "requestInterval": "00.00:00:00.500",
+                  "datasetSettings": {
+                    "type": "RestResource",
+                    "typeProperties": {
+                      "relativeUrl": {
+                        "value": "v2/@{item().ruta}/data/?api_key=@{activity('Leer_api_key').output.firstRow.api_key}&frequency=@{item().frecuencia}&data[0]=value@{item().facets}&start=@{formatDateTime(pipeline().parameters.fecha_inicio_historia, item().formato_inicio)}&sort[0][column]=period&sort[0][direction]=asc&length=5000&offset={offset}",
+                        "type": "Expression"
+                      }
+                    },
+                    "schema": [],
+                    "externalReferences": {
+                      "connection": "8fb5f521-adf8-4733-bc87-94d016395220"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "JsonSink",
+                  "formatSettings": {
+                    "type": "JsonWriteSettings"
+                  },
+                  "storeSettings": {
+                    "type": "AzureBlobStorageWriteSettings"
+                  },
+                  "datasetSettings": {
+                    "type": "Json",
+                    "typeProperties": {
+                      "location": {
+                        "type": "LakehouseLocation",
+                        "folderPath": {
+                          "value": "bronze/eia/@{item().categoria}/@{item().nombre}",
+                          "type": "Expression"
+                        },
+                        "fileName": {
+                          "value": "@{item().nombre}_@{formatDateTime(utcNow(), 'yyyyMMdd_HHmmss')}.json",
+                          "type": "Expression"
+                        }
+                      }
+                    },
+                    "schema": {},
+                    "linkedService": {
+                      "name": "LH_EIA",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "76f18ffe-a10e-b87d-4c3f-1285696c8c72",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Files"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 60,
+                "secureInput": true,
+                "secureOutput": true
+              },
+              "name": "Copiar_dataset_EIA",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "Extraer_EIA_Bronze",
+        "dependsOn": [
+          {
+            "activity": "Leer_api_key",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<h3>Falla al leer la API key</h3>\n<p><strong>DETALLE DE LA EJECUCIÓN</strong><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n<p><strong>ERROR REPORTADO</strong><br>\n@{substring(activity('Leer_api_key').error.message, 0, min(length(activity('Leer_api_key').error.message), 500))}</p>\n<p><strong>CAUSAS PROBABLES</strong><br>\n1. No existe <code>Files/config/eia_config.json</code> en el Lakehouse LH_EIA.<br>\n2. El archivo existe pero no tiene el formato <code>{\"api_key\": \"...\"}</code>.</p>\n<p><strong>IMPACTO</strong><br>\nNo se llamó a la API de EIA. Bronze no recibió datos en esta ejecución.</p>\n<p><strong>ACCIÓN RECOMENDADA</strong><br>\nSubir o corregir <code>eia_config.json</code> en <code>Files/config/</code> del Lakehouse LH_EIA y volver a ejecutar el pipeline.</p>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "❌ [EIA_gov] Falla al leer la API key · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Lectura_API_Key",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Leer_api_key",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<h3>Falla en la extracción a Bronze</h3>\n<p><strong>DETALLE DE LA EJECUCIÓN</strong><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n<p><strong>ERROR REPORTADO</strong><br>\n@{substring(activity('Extraer_EIA_Bronze').error.message, 0, min(length(activity('Extraer_EIA_Bronze').error.message), 500))}</p>\n<p><strong>IMPACTO</strong><br>\nAl menos uno de los 9 datasets de EIA no se guardó en Bronze en esta ejecución. Los que terminaron bien sí quedaron guardados.</p>\n<p><strong>ACCIÓN RECOMENDADA</strong><br>\nIngresar a Monitor en el workspace EIA_gov, buscar el Run ID y revisar qué iteración de <code>Copiar_dataset_EIA</code> falló (ruta, filtros o límite de la API).</p>",
+          "to": "edgar-k912@hotmail.com",
+          "subject": {
+            "value": "❌ [EIA_gov] Falla en la extracción a Bronze · @{pipeline().PipelineName}",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Extraccion",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Extraer_EIA_Bronze",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "951a5d3f-de84-97c5-4556-95ccdaaa00dc",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "NB01_Silver",
+        "dependsOn": [
+          {
+            "activity": "Extraer_EIA_Bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "0f9e8ee3-3204-a170-484c-8f1ec7cc05d2",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "NB02_Gold",
+        "dependsOn": [
+          {
+            "activity": "LH_Refresh01",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#1e8449;margin-bottom:4px;\">Ejecución completada correctamente</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nFinalizó: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nDuración total: @{div(sub(ticks(utcnow()),ticks(pipeline().TriggerTime)),600000000)} min<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Completada<br>\nGold: Completada<br>\nModelo semántico: Completada</p>\n\n<p><b>RESULTADO</b><br>\nLas tres capas y el modelo semántico se actualizaron con los datos de esta ejecución.</p>\n\n</div>\n",
+          "to": "edgar-k912@hotmail.com",
+          "subject": "✅ [EIA_gov] Ejecución completada · @{pipeline().PipelineName}"
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Exito_Flujo_EIA",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Semantic_Model_Refresh",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Gold</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Completada<br>\nGold: Fallida (NB02_Gold)<br>\nModelo semántico: No ejecutada</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('NB02_Gold').error.message, 0, min(length(activity('NB02_Gold').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nBronze y Silver se cargaron correctamente. Gold y el modelo semántico permanecen sin actualizar, por lo que los reportes muestran datos de la ejecución anterior.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace EIA_gov, buscar el Run ID y revisar la salida del notebook NB02_Gold.</p>\n\n</div>\n",
+          "to": "edgar-k912@hotmail.com",
+          "subject": "❌ [EIA_gov] Falla en etapa Gold · @{pipeline().PipelineName}"
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Gold",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "NB02_Gold",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "RefreshSqlEndpoint",
+        "typeProperties": {
+          "workspaceId": "01623ca8-a4b9-434d-96a5-a96ce81b2f3f",
+          "sqlEndpointId": "6a751019-497a-4650-9f5f-2375036eab15",
+          "recreateTables": false
+        },
+        "externalReferences": {
+          "connection": "9ee62757-5bb3-48d7-86a3-658202918543"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "LH_Refresh01",
+        "dependsOn": [
+          {
+            "activity": "NB01_Silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "RefreshSqlEndpoint",
+        "typeProperties": {
+          "workspaceId": "01623ca8-a4b9-434d-96a5-a96ce81b2f3f",
+          "sqlEndpointId": "6a751019-497a-4650-9f5f-2375036eab15",
+          "recreateTables": false
+        },
+        "externalReferences": {
+          "connection": "9ee62757-5bb3-48d7-86a3-658202918543"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "LH_Refresh02",
+        "dependsOn": [
+          {
+            "activity": "NB02_Gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "PBISemanticModelRefresh",
+        "typeProperties": {
+          "method": "POST",
+          "groupId": "00000000-0000-0000-0000-000000000000",
+          "datasetId": "7e7273df-2ddf-bf72-4768-3184519ae059",
+          "commitMode": "Transactional",
+          "objects": [
+            {
+              "table": "dim_fecha"
+            },
+            {
+              "table": "dim_fuente_generacion"
+            },
+            {
+              "table": "dim_region_electrica"
+            },
+            {
+              "table": "dim_serie"
+            },
+            {
+              "table": "fact_consumo_gas_mensual"
+            },
+            {
+              "table": "fact_electricidad_diaria"
+            },
+            {
+              "table": "fact_generacion_diaria"
+            },
+            {
+              "table": "fact_intercambio_diario"
+            },
+            {
+              "table": "fact_inventarios_semanales"
+            },
+            {
+              "table": "fact_precio_combustible_semanal"
+            },
+            {
+              "table": "fact_precios_diarios"
+            },
+            {
+              "table": "fact_precios_mensuales"
+            },
+            {
+              "table": "fact_ultimo_precio"
+            },
+            {
+              "table": "Medidas"
+            },
+            {
+              "table": "Sector"
+            },
+            {
+              "table": "Categoría de barras"
+            },
+            {
+              "table": "Serie del gráfico"
+            },
+            {
+              "table": "DateTableTemplate_09e5e5ba-7d90-4fa5-a2bc-da97eb0f8dc3"
+            },
+            {
+              "table": "LocalDateTable_f001af1b-336d-4ef2-98d0-1d489c659571"
+            }
+          ],
+          "waitOnCompletion": true,
+          "operationType": "SemanticModelRefresh"
+        },
+        "externalReferences": {
+          "connection": "0998d01f-9ca3-4b4f-abf8-83f264d65b03"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Semantic_Model_Refresh",
+        "dependsOn": [
+          {
+            "activity": "LH_Refresh02",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Silver</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Fallida (NB01_Silver)<br>\nGold: No ejecutada<br>\nModelo semántico: No ejecutada</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('NB01_Silver').error.message, 0, min(length(activity('NB01_Silver').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nBronze se cargó correctamente. Silver, Gold y el modelo semántico permanecen sin actualizar.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace EIA_gov, buscar el Run ID y revisar la salida del notebook NB01_Silver.</p>\n\n</div>\n",
+          "to": "edgar-k912@hotmail.com",
+          "subject": "❌ [EIA_gov] Falla en etapa Silver · @{pipeline().PipelineName}"
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Silver",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "NB01_Silver",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Office365Email",
+        "typeProperties": {
+          "body": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#222;\">\n\n<h3 style=\"color:#a93226;margin-bottom:4px;\">Falla en la etapa Modelo semántico</h3>\n\n<p><b>DETALLE DE LA EJECUCIÓN</b><br>\nPipeline: @{pipeline().PipelineName}<br>\nWorkspace: EIA_gov<br>\nTipo de disparo: @{pipeline().TriggerType}<br>\nHora de la falla: @{convertFromUtc(utcnow(),'SA Pacific Standard Time','yyyy-MM-dd HH:mm:ss')}<br>\nRun ID: @{pipeline().RunId}</p>\n\n<p><b>ESTADO DE LAS ETAPAS</b><br>\nBronze: Completada<br>\nSilver: Completada<br>\nGold: Completada<br>\nModelo semántico: Fallida (PBI_EIA)</p>\n\n<p><b>ERROR REPORTADO</b><br>\n@{substring(activity('Semantic_Model_Refresh').error.message, 0, min(length(activity('Semantic_Model_Refresh').error.message), 500))}</p>\n\n<p><b>IMPACTO</b><br>\nBronze, Silver y Gold se cargaron correctamente. El modelo semántico permanece sin actualizar, por lo que los reportes muestran datos de la ejecución anterior.</p>\n\n<p><b>ACCIÓN RECOMENDADA</b><br>\nIngresar a Monitor en el workspace EIA_gov, buscar el Run ID y revisar el historial de actualización del modelo semántico PBI_EIA.</p>\n\n</div>\n\n",
+          "to": "edgar-k912@hotmail.com",
+          "subject": "❌ [EIA_gov] Falla en etapa Modelo semántico · @{pipeline().PipelineName}"
+        },
+        "externalReferences": {
+          "connection": "4c78e705-af08-49af-bc60-1854f06bbd38"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Correo_Fallo_Semantic_Model",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Semantic_Model_Refresh",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "fecha_inicio_historia": {
+        "type": "string",
+        "defaultValue": "2023-01-01"
+      },
+      "datasets": {
+        "type": "array",
+        "defaultValue": [
+          {
+            "nombre": "rto_demanda_region",
+            "categoria": "electricity",
+            "ruta": "electricity/rto/daily-region-data",
+            "frecuencia": "daily",
+            "facets": "&facets[timezone][]=Eastern&facets[respondent][]=US48&facets[respondent][]=CISO&facets[respondent][]=ERCO&facets[respondent][]=PJM&facets[respondent][]=MISO&facets[respondent][]=NYIS&facets[respondent][]=ISNE&facets[respondent][]=SWPP",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "rto_generacion_combustible",
+            "categoria": "electricity",
+            "ruta": "electricity/rto/daily-fuel-type-data",
+            "frecuencia": "daily",
+            "facets": "&facets[timezone][]=Eastern&facets[respondent][]=US48&facets[respondent][]=CISO&facets[respondent][]=ERCO&facets[respondent][]=PJM&facets[respondent][]=MISO&facets[respondent][]=NYIS&facets[respondent][]=ISNE&facets[respondent][]=SWPP",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "rto_intercambio",
+            "categoria": "electricity",
+            "ruta": "electricity/rto/daily-interchange-data",
+            "frecuencia": "daily",
+            "facets": "&facets[timezone][]=Eastern&facets[fromba][]=CISO&facets[fromba][]=ERCO&facets[fromba][]=PJM&facets[fromba][]=MISO&facets[fromba][]=NYIS&facets[fromba][]=ISNE&facets[fromba][]=SWPP",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "precio_minorista_combustibles",
+            "categoria": "petroleum",
+            "ruta": "petroleum/pri/gnd",
+            "frecuencia": "weekly",
+            "facets": "&facets[product][]=EPMR&facets[product][]=EPMM&facets[product][]=EPMP&facets[product][]=EPD2D",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "precio_spot_crudo",
+            "categoria": "petroleum",
+            "ruta": "petroleum/pri/spt",
+            "frecuencia": "daily",
+            "facets": "&facets[series][]=RWTC&facets[series][]=RBRTE",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "inventarios_semanales",
+            "categoria": "petroleum",
+            "ruta": "petroleum/stoc/wstk",
+            "frecuencia": "weekly",
+            "facets": "&facets[series][]=WCESTUS1&facets[series][]=WCSSTUS1&facets[series][]=WGTSTUS1&facets[series][]=WDISTUS1",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "almacenamiento_gas",
+            "categoria": "natural-gas",
+            "ruta": "natural-gas/stor/wkly",
+            "frecuencia": "weekly",
+            "facets": "",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "precio_henry_hub",
+            "categoria": "natural-gas",
+            "ruta": "natural-gas/pri/fut",
+            "frecuencia": "daily",
+            "facets": "&facets[series][]=RNGWHHD&facets[series][]=RNGC1",
+            "formato_inicio": "yyyy-MM-dd"
+          },
+          {
+            "nombre": "consumo_gas_sector",
+            "categoria": "natural-gas",
+            "ruta": "natural-gas/cons/sum",
+            "frecuencia": "monthly",
+            "facets": "&facets[duoarea][]=NUS",
+            "formato_inicio": "yyyy-MM"
+          }
+        ]
+      }
+    }
+  }
+}

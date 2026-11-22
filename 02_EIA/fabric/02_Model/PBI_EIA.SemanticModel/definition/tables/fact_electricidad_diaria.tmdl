@@ -1,0 +1,84 @@
+/// Balance diario de la red eléctrica. Una fila por región y día, con demanda, pronóstico de demanda, generación neta e intercambio total en MWh, y el error del pronóstico en porcentaje.
+table fact_electricidad_diaria
+	lineageTag: c11d77e2-7b21-47a9-9963-db514dcf4995
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c43923c1-217e-4799-b008-286db4235055
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column region
+		dataType: string
+		lineageTag: fcda0501-083d-46a0-970b-1517301ca3a9
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column demanda_mwh
+		dataType: double
+		lineageTag: b359781d-148a-4e5a-82f3-f6bbaef6b0b6
+		summarizeBy: sum
+		sourceColumn: demanda_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column pronostico_demanda_mwh
+		dataType: double
+		lineageTag: f00fe905-c306-4713-976b-c22c2ff76561
+		summarizeBy: sum
+		sourceColumn: pronostico_demanda_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column generacion_neta_mwh
+		dataType: double
+		lineageTag: 565814eb-8566-4d14-82dd-fa6a0d24076c
+		summarizeBy: sum
+		sourceColumn: generacion_neta_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column intercambio_total_mwh
+		dataType: double
+		lineageTag: 78150460-d941-4a6b-b806-97013d3eac92
+		summarizeBy: sum
+		sourceColumn: intercambio_total_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column error_pronostico_pct
+		dataType: double
+		lineageTag: 0ab83fac-deca-49b8-9b80-c8df4a5c1ac2
+		summarizeBy: sum
+		sourceColumn: error_pronostico_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_electricidad_diaria = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_electricidad_diaria = Origen{[Schema="gold",Item="fact_electricidad_diaria"]}[Data]
+				in
+				    gold_fact_electricidad_diaria
+
+	annotation PBI_ResultType = Table
+

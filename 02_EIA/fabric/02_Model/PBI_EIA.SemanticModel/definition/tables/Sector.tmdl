@@ -1,0 +1,52 @@
+/// Lista de los tres sectores del tablero (Electricidad, Gas natural y Petróleo) para la segmentación de botones. Tabla de utilidad sin relación con los hechos: las medidas leen el sector elegido con [Sector seleccionado]. Filtra a 'Categoría de barras'.
+table Sector
+	lineageTag: 8a08450a-8f36-4d14-baeb-081b92b71ad3
+
+	/// Nombre visible del sector en la segmentación de botones.
+	column Sector
+		dataType: string
+		lineageTag: 9d08bfd5-ec53-4da6-9a97-cfcbfaebaa10
+		summarizeBy: none
+		sourceColumn: Sector
+		sortByColumn: Orden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Clave corta del sector que usan las medidas: el, gas o pet.
+	column Clave
+		dataType: string
+		isHidden
+		lineageTag: 4fddae27-d31b-4ca1-b6f3-705d93d93384
+		summarizeBy: none
+		sourceColumn: Clave
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Orden de los botones: 1 Electricidad, 2 Gas natural, 3 Petróleo.
+	column Orden
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0271114b-e9d9-484a-ba28-97dfdc98f610
+		summarizeBy: none
+		sourceColumn: Orden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sector = m
+		mode: import
+		source =
+				let
+				    Origen = #table(
+				        type table [Sector = text, Clave = text, Orden = Int64.Type],
+				        {
+				            {"Electricidad", "el", 1},
+				            {"Gas natural", "gas", 2},
+				            {"Petróleo", "pet", 3}
+				        }
+				    )
+				in
+				    Origen
+
+	annotation PBI_ResultType = Table
+

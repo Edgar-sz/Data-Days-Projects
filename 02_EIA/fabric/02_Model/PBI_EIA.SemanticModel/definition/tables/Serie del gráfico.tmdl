@@ -1,0 +1,54 @@
+/// Parámetro de campo del gráfico de líneas: una fila por serie diaria (consumo y pronóstico de electricidad, Henry Hub, WTI y Brent). La relación con Sector deja solo las series del sector elegido.
+table 'Serie del gráfico'
+	lineageTag: 0e35b996-e5b3-4d2a-b262-37903c44e0a6
+
+	column 'Serie del gráfico Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d60bd229-dea9-447c-96ec-295fb923a91f
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+	column 'Serie del gráfico Fields'
+		dataType: string
+		isHidden
+		lineageTag: 803d849d-34f3-4130-8414-3f1a4a1a7a8f
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Serie del gráfico Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+	column 'Serie del gráfico'
+		dataType: string
+		lineageTag: e67ef047-6423-4132-81a2-ea85c778c6fc
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Serie del gráfico Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Serie del gráfico Fields'
+
+	/// Sector al que pertenece cada serie. Se relaciona con Sector[Sector] para que el gráfico muestre solo las líneas del sector elegido.
+	column Sector = SWITCH ( 'Serie del gráfico'[Serie del gráfico Order], 0, "Electricidad", 1, "Electricidad", 2, "Gas natural", "Petróleo" )
+		dataType: string
+		isHidden
+		lineageTag: 81ffe050-5a15-471e-a715-c596d76f7cf9
+		summarizeBy: none
+
+	partition 'Serie del gráfico' = calculated
+		mode: import
+		source =
+				{
+				    ("Consumo real", NAMEOF('Medidas'[Consumo diario]), 0),
+				    ("Pronóstico del día anterior", NAMEOF('Medidas'[Pronóstico diario]), 1),
+				    ("Henry Hub (precio del día)", NAMEOF('Medidas'[Henry Hub diario]), 2),
+				    ("WTI (EE. UU.)", NAMEOF('Medidas'[WTI diario]), 3),
+				    ("Brent (internacional)", NAMEOF('Medidas'[Brent diario]), 4)
+				}
+

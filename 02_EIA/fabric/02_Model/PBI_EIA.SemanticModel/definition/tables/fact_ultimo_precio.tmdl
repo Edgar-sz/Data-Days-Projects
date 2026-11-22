@@ -1,0 +1,78 @@
+/// Último precio disponible de cada serie de precios. Una fila por serie, con la fecha y el precio más recientes, el precio anterior, la variación en porcentaje y los días transcurridos desde el último dato. Se usa en las tarjetas KPI y no se relaciona con dim_fecha.
+table fact_ultimo_precio
+	lineageTag: 2e0b09cf-b78e-4e1c-b881-2e48ef780e41
+
+	column serie
+		dataType: string
+		lineageTag: 4152659b-258c-4439-8fa3-73fe408fff32
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2f1c0e94-9d64-4c60-a7a7-e7a91c4cba5d
+		summarizeBy: none
+		sourceColumn: fecha
+
+		variation Variation
+			isDefault
+			relationship: 906091fe-6530-4040-8664-e239b4c0a8ba
+			defaultHierarchy: LocalDateTable_f001af1b-336d-4ef2-98d0-1d489c659571.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column precio
+		dataType: double
+		lineageTag: 1e0a85dc-b817-4316-9b1f-944469f565af
+		summarizeBy: sum
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column precio_anterior
+		dataType: double
+		lineageTag: 8c78e04f-ee1e-421d-9143-2c6459ee3bda
+		summarizeBy: sum
+		sourceColumn: precio_anterior
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column variacion_pct
+		dataType: double
+		lineageTag: 9c7e7f0d-9c64-45ed-bb91-8a1eca86fd2d
+		summarizeBy: sum
+		sourceColumn: variacion_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dias_desde_ultimo_dato
+		dataType: int64
+		formatString: 0
+		lineageTag: 3d8108a6-255c-43bd-af1b-a5c203ceed04
+		summarizeBy: sum
+		sourceColumn: dias_desde_ultimo_dato
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_ultimo_precio = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_ultimo_precio = Origen{[Schema="gold",Item="fact_ultimo_precio"]}[Data]
+				in
+				    gold_fact_ultimo_precio
+
+	annotation PBI_ResultType = Table
+

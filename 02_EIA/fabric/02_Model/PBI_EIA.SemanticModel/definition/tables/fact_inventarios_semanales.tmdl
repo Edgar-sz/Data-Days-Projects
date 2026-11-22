@@ -1,0 +1,44 @@
+/// Inventarios semanales de petróleo y gas natural. Una fila por serie y semana, con el volumen almacenado de crudo comercial, reserva estratégica, gasolina y destilados, y de gas natural en almacenamiento subterráneo. La unidad de cada serie está en dim_serie.
+table fact_inventarios_semanales
+	lineageTag: d6110729-764f-4509-9628-d277f358e376
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c5c21f2f-504f-4cc7-9d8e-5e778cb6cc13
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column serie
+		dataType: string
+		lineageTag: 270447ac-4420-48b8-b0d4-8d6d8391ce6a
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor
+		dataType: double
+		lineageTag: 99ce6d79-2171-4074-a20b-cef46f24cc36
+		summarizeBy: sum
+		sourceColumn: valor
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_inventarios_semanales = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_inventarios_semanales = Origen{[Schema="gold",Item="fact_inventarios_semanales"]}[Data]
+				in
+				    gold_fact_inventarios_semanales
+
+	annotation PBI_ResultType = Table
+

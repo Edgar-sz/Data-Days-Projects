@@ -1,0 +1,44 @@
+/// Consumo mensual de gas natural en Estados Unidos por sector. Una fila por serie y mes, con el consumo en millones de pies cúbicos.
+table fact_consumo_gas_mensual
+	lineageTag: 26feadbd-7e2e-41a2-8250-dd53854c0891
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e7e6d46c-5a39-499e-b085-da0b669db627
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column serie
+		dataType: string
+		lineageTag: 8c3c2582-f72e-4022-925f-95fe1a3f508a
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column consumo_mmcf
+		dataType: double
+		lineageTag: 44d7c77e-e783-4f92-b250-3ca414829eba
+		summarizeBy: sum
+		sourceColumn: consumo_mmcf
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_consumo_gas_mensual = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_consumo_gas_mensual = Origen{[Schema="gold",Item="fact_consumo_gas_mensual"]}[Data]
+				in
+				    gold_fact_consumo_gas_mensual
+
+	annotation PBI_ResultType = Table
+

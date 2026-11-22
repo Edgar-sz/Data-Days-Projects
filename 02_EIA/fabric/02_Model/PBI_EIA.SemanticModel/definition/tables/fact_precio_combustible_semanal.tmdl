@@ -1,0 +1,44 @@
+/// Precio minorista semanal de gasolina y diésel. Una fila por serie y semana, con el precio de venta al público en dólares por galón para cada área geográfica.
+table fact_precio_combustible_semanal
+	lineageTag: 12d62a15-b8d5-43a3-b7b5-61b808585b18
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a7e44f7c-3362-4310-8e5b-2d2cbec2ddbf
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column serie
+		dataType: string
+		lineageTag: 1e1a6ba1-86e0-4c2e-a799-49d5f49d9df8
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio
+		dataType: double
+		lineageTag: 1b5aa81d-5e18-4f52-9a84-d08d9ef2e063
+		summarizeBy: sum
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_precio_combustible_semanal = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_precio_combustible_semanal = Origen{[Schema="gold",Item="fact_precio_combustible_semanal"]}[Data]
+				in
+				    gold_fact_precio_combustible_semanal
+
+	annotation PBI_ResultType = Table
+

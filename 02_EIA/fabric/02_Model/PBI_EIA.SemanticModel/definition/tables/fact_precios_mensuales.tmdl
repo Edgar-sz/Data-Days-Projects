@@ -1,0 +1,93 @@
+/// Resumen mensual de precios de crudo, gas natural y combustibles minoristas. Una fila por serie y mes, con precio promedio, mínimo y máximo, número de observaciones, promedio del mes anterior y variación mensual en porcentaje.
+table fact_precios_mensuales
+	lineageTag: 0f5a8884-c14b-4271-93e6-67ce432d351d
+
+	column serie
+		dataType: string
+		lineageTag: c4dd4893-95b8-45e7-a547-825793778dda
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_mes
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 929a93d8-9f38-4d36-bd11-e9f82e4a49c8
+		summarizeBy: none
+		sourceColumn: fecha_mes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column precio_promedio
+		dataType: double
+		lineageTag: 67f8cb6c-d262-4b02-8193-ca195a3ab7bf
+		summarizeBy: sum
+		sourceColumn: precio_promedio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column precio_minimo
+		dataType: double
+		lineageTag: 2073f27d-f860-49ec-9039-1a581921eb2c
+		summarizeBy: sum
+		sourceColumn: precio_minimo
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column precio_maximo
+		dataType: double
+		lineageTag: 1d62adfe-79d9-4bdf-a665-5f8742c7c117
+		summarizeBy: sum
+		sourceColumn: precio_maximo
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column observaciones
+		dataType: int64
+		formatString: 0
+		lineageTag: e6ab473b-7e17-4683-bced-9fc0887e5974
+		summarizeBy: sum
+		sourceColumn: observaciones
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio_mes_anterior
+		dataType: double
+		lineageTag: 714f2322-4658-4e4b-87b8-43945d63c1e3
+		summarizeBy: sum
+		sourceColumn: precio_mes_anterior
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column variacion_mensual_pct
+		dataType: double
+		lineageTag: d978c3d5-0929-4c44-8271-a60cd2aa8a56
+		summarizeBy: sum
+		sourceColumn: variacion_mensual_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_precios_mensuales = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_precios_mensuales = Origen{[Schema="gold",Item="fact_precios_mensuales"]}[Data]
+				in
+				    gold_fact_precios_mensuales
+
+	annotation PBI_ResultType = Table
+

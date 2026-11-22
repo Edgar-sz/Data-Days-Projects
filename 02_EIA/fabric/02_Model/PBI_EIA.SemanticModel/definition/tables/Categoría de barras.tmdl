@@ -1,0 +1,77 @@
+/// Categorías del gráfico de barras de cada sector: fuentes de generación (Electricidad), sectores de consumo de gas (Gas natural) y combustibles en el surtidor (Petróleo). Una fila por sector y categoría. La medida [Valor de barra] calcula el valor de cada una con su código.
+table 'Categoría de barras'
+	lineageTag: 93000e43-cd49-479b-ad9e-033057d2965e
+
+	/// Sector al que pertenece la categoría. Se relaciona con Sector[Sector] para mostrar solo las categorías del sector elegido.
+	column Sector
+		dataType: string
+		isHidden
+		lineageTag: c88e2024-236c-4273-bdc4-a6f15c4f9570
+		summarizeBy: none
+		sourceColumn: Sector
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre visible de la barra.
+	column Categoría
+		dataType: string
+		lineageTag: 7ec8b58a-97c2-47a6-a291-2838bedcdeed
+		summarizeBy: none
+		sourceColumn: Categoría
+		sortByColumn: Orden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Código con el que se filtra el hecho: fuente de generación (NG, NUC…), serie de consumo de gas (N3045US2…) o serie de precio minorista (EMD_EPD2D_PTE_NUS_DPG…). OTRAS agrupa las fuentes que no están en la lista.
+	column Código
+		dataType: string
+		isHidden
+		lineageTag: 00c29df9-f1e5-4123-9c8b-29956bef909f
+		summarizeBy: none
+		sourceColumn: Código
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Orden de respaldo de las categorías dentro de cada sector.
+	column Orden
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 58d1de23-8b5b-4f69-8c01-e8a2156066e6
+		summarizeBy: none
+		sourceColumn: Orden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Categoría de barras' = m
+		mode: import
+		source =
+				let
+				    Origen = #table(
+				        type table [Sector = text, #"Categoría" = text, #"Código" = text, Orden = Int64.Type],
+				        {
+				            {"Electricidad", "Gas natural", "NG", 1},
+				            {"Electricidad", "Nuclear", "NUC", 2},
+				            {"Electricidad", "Carbón", "COL", 3},
+				            {"Electricidad", "Eólica", "WND", 4},
+				            {"Electricidad", "Solar", "SUN", 5},
+				            {"Electricidad", "Hidroeléctrica", "WAT", 6},
+				            {"Electricidad", "Otras", "OTRAS", 7},
+				            {"Gas natural", "Generación eléctrica", "N3045US2", 1},
+				            {"Gas natural", "Industrial", "N3035US2", 2},
+				            {"Gas natural", "Arrendamiento y planta", "N9160US2", 3},
+				            {"Gas natural", "Comercial", "N3020US2", 4},
+				            {"Gas natural", "Ductos y distribución", "N9170US2", 5},
+				            {"Gas natural", "Residencial", "N3010US2", 6},
+				            {"Gas natural", "Vehicular", "N3025US2", 7},
+				            {"Petróleo", "Diésel", "EMD_EPD2D_PTE_NUS_DPG", 1},
+				            {"Petróleo", "Gasolina premium", "EMM_EPMP_PTE_NUS_DPG", 2},
+				            {"Petróleo", "Gasolina media", "EMM_EPMM_PTE_NUS_DPG", 3},
+				            {"Petróleo", "Gasolina regular", "EMM_EPMR_PTE_NUS_DPG", 4}
+				        }
+				    )
+				in
+				    Origen
+
+	annotation PBI_ResultType = Table
+

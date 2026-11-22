@@ -1,0 +1,52 @@
+/// Intercambio diario de energía entre regiones. Una fila por región de origen, región de destino y día, con el flujo en MWh: positivo cuando la región de origen envía energía y negativo cuando la recibe.
+table fact_intercambio_diario
+	lineageTag: 71e2dfc6-4dff-447e-8840-d3147eb96075
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: cceeae49-b2d4-486e-bf26-58c639739f67
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column region_origen
+		dataType: string
+		lineageTag: e005b5fc-95af-42a7-a372-26fc5932bba6
+		summarizeBy: none
+		sourceColumn: region_origen
+
+		annotation SummarizationSetBy = Automatic
+
+	column region_destino
+		dataType: string
+		lineageTag: d0b35a02-150e-47b2-b51d-91a9d7475b2a
+		summarizeBy: none
+		sourceColumn: region_destino
+
+		annotation SummarizationSetBy = Automatic
+
+	column intercambio_mwh
+		dataType: double
+		lineageTag: 004456ae-6c7a-4afc-be47-ad6ba428cc79
+		summarizeBy: sum
+		sourceColumn: intercambio_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_intercambio_diario = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_intercambio_diario = Origen{[Schema="gold",Item="fact_intercambio_diario"]}[Data]
+				in
+				    gold_fact_intercambio_diario
+
+	annotation PBI_ResultType = Table
+

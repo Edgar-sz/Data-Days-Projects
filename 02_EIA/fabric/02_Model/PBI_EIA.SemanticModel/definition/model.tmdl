@@ -1,0 +1,37 @@
+model Model
+	culture: es-PE
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-PE
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode","MCP-PBIModeling"]
+
+annotation PBI_QueryOrder = ["dim_fecha","dim_fuente_generacion","dim_region_electrica","dim_serie","fact_consumo_gas_mensual","fact_electricidad_diaria","fact_generacion_diaria","fact_intercambio_diario","fact_inventarios_semanales","fact_precio_combustible_semanal","fact_precios_diarios","fact_precios_mensuales","fact_ultimo_precio","Medidas","Sector","Categoría de barras"]
+
+ref table dim_fecha
+ref table dim_fuente_generacion
+ref table dim_region_electrica
+ref table dim_serie
+ref table fact_consumo_gas_mensual
+ref table fact_electricidad_diaria
+ref table fact_generacion_diaria
+ref table fact_intercambio_diario
+ref table fact_inventarios_semanales
+ref table fact_precio_combustible_semanal
+ref table fact_precios_diarios
+ref table fact_precios_mensuales
+ref table fact_ultimo_precio
+ref table Medidas
+ref table Sector
+ref table 'Categoría de barras'
+ref table 'Serie del gráfico'
+ref table DateTableTemplate_09e5e5ba-7d90-4fa5-a2bc-da97eb0f8dc3
+ref table LocalDateTable_f001af1b-336d-4ef2-98d0-1d489c659571
+
+ref cultureInfo es-PE
+

@@ -1,0 +1,90 @@
+relationship 4d41368f-863d-6d1f-8189-6f0ad97c3bab
+	fromColumn: fact_electricidad_diaria.region
+	toColumn: dim_region_electrica.region
+
+relationship aa644442-8672-20d4-fe54-3fb235d5fb2e
+	fromColumn: fact_generacion_diaria.region
+	toColumn: dim_region_electrica.region
+
+relationship a3c4ec7f-f29a-ac05-61de-584203d1557b
+	fromColumn: fact_precio_combustible_semanal.serie
+	toColumn: dim_serie.serie
+
+relationship 1cd65572-39b6-ec5b-d6b9-e65acbb41780
+	fromColumn: fact_inventarios_semanales.serie
+	toColumn: dim_serie.serie
+
+relationship dfc88b4e-4cae-4663-24a5-8c278779ae88
+	fromColumn: fact_precios_mensuales.serie
+	toColumn: dim_serie.serie
+
+relationship dd0d5787-2b26-880b-4b2f-69e17d1c8a9b
+	fromColumn: fact_precios_diarios.serie
+	toColumn: dim_serie.serie
+
+relationship 4a56de0e-bab7-d68f-5dcb-91a31e802937
+	fromColumn: fact_consumo_gas_mensual.serie
+	toColumn: dim_serie.serie
+
+relationship 8f443249-4ee6-9e0a-9ba4-563451c450bf
+	fromColumn: fact_generacion_diaria.fuente
+	toColumn: dim_fuente_generacion.fuente
+
+relationship 6fc55e70-3a1e-f899-5854-83777f8f71c0
+	fromColumn: fact_consumo_gas_mensual.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 237aae3a-1d55-6b7c-077a-506afd938f81
+	fromColumn: fact_precios_diarios.fecha
+	toColumn: dim_fecha.fecha
+
+relationship cce30915-341b-e453-00c1-d60e2cd60ae7
+	fromColumn: fact_precio_combustible_semanal.fecha
+	toColumn: dim_fecha.fecha
+
+relationship d1e7ae89-e026-94c0-b9fb-cd8c2747a1fc
+	fromColumn: fact_precios_mensuales.fecha_mes
+	toColumn: dim_fecha.fecha
+
+relationship 09d51d03-cb34-bb29-8efa-0194edb6bb09
+	fromColumn: fact_inventarios_semanales.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 62f72162-9402-fbc1-93ed-bb4eb9e49770
+	fromColumn: fact_electricidad_diaria.fecha
+	toColumn: dim_fecha.fecha
+
+relationship c36d4792-904c-6b5c-2350-366b86362f50
+	fromColumn: fact_generacion_diaria.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 476b0871-06fa-9dd6-0d54-bf45b98d5427
+	fromColumn: fact_intercambio_diario.fecha
+	toColumn: dim_fecha.fecha
+
+relationship 99c7c65b-12bd-2446-210d-99b3514d91a8
+	fromColumn: fact_intercambio_diario.region_origen
+	toColumn: dim_region_electrica.region
+
+relationship 82495749-abb3-d28b-657c-cf7e97fe1078
+	fromColumn: fact_ultimo_precio.serie
+	toColumn: dim_serie.serie
+
+relationship 58fbfcef-8fb9-aa59-44fb-a48eb5011a97
+	isActive: false
+	fromColumn: fact_intercambio_diario.region_destino
+	toColumn: dim_region_electrica.region
+
+relationship 802ae7da-1a96-4cb4-b669-b41b2dde83a7
+	fromColumn: 'Categoría de barras'.Sector
+	toColumn: Sector.Sector
+
+relationship 'Serie del gráfico_Sector_Sector_Sector'
+	fromColumn: 'Serie del gráfico'.Sector
+	toColumn: Sector.Sector
+
+relationship 906091fe-6530-4040-8664-e239b4c0a8ba
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fact_ultimo_precio.fecha
+	toColumn: LocalDateTable_f001af1b-336d-4ef2-98d0-1d489c659571.Date
+

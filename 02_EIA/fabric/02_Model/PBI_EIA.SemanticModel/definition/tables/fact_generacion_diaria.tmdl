@@ -1,0 +1,62 @@
+/// Generación eléctrica diaria por fuente. Una fila por región, día y fuente, con la generación en MWh y su participación en la generación positiva del día. Los valores negativos corresponden al almacenamiento mientras carga.
+table fact_generacion_diaria
+	lineageTag: cf974670-5fb7-43eb-8871-afcbbcd83e46
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: bcbc94d5-2139-4fa7-ae01-654a42639821
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column region
+		dataType: string
+		lineageTag: 6334a862-d44e-483c-9f41-5d1b6f1c3dc8
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column fuente
+		dataType: string
+		lineageTag: 51a831a5-33c2-4b99-9046-986bf3c0ab9d
+		summarizeBy: none
+		sourceColumn: fuente
+
+		annotation SummarizationSetBy = Automatic
+
+	column generacion_mwh
+		dataType: double
+		lineageTag: bfba04d6-b3cd-4585-bca5-94c2c437f541
+		summarizeBy: sum
+		sourceColumn: generacion_mwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column participacion_pct
+		dataType: double
+		lineageTag: 2eab80fd-085d-4ca7-9478-11172d8b9284
+		summarizeBy: sum
+		sourceColumn: participacion_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_generacion_diaria = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_generacion_diaria = Origen{[Schema="gold",Item="fact_generacion_diaria"]}[Data]
+				in
+				    gold_fact_generacion_diaria
+
+	annotation PBI_ResultType = Table
+

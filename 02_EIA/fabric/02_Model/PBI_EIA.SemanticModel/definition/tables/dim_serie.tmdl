@@ -1,0 +1,119 @@
+/// Catálogo de series de petróleo y gas natural de EIA. Una fila por serie, con su descripción, área, producto, proceso, unidad de medida, dataset de origen, categoría, tipo de medida y frecuencia. Se usa para filtrar los hechos de precios, inventarios y consumo.
+table dim_serie
+	lineageTag: 0924963e-d62e-468d-8cdc-110d597b3b37
+
+	column serie
+		dataType: string
+		lineageTag: 85630dd6-ead0-4410-b401-d64c5590e42a
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column descripcion_serie
+		dataType: string
+		lineageTag: 6e0804fd-0fbb-4aa1-8d56-401dfb65f23f
+		summarizeBy: none
+		sourceColumn: descripcion_serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column area
+		dataType: string
+		lineageTag: c42a02e4-0f9b-4a3f-a6a6-dfd2d10a6580
+		summarizeBy: none
+		sourceColumn: area
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_area
+		dataType: string
+		lineageTag: e66cd925-1239-42ee-a4bf-e8162ef7169b
+		summarizeBy: none
+		sourceColumn: nombre_area
+
+		annotation SummarizationSetBy = Automatic
+
+	column producto
+		dataType: string
+		lineageTag: b4ec196f-e1a3-4420-b051-be110a56f73a
+		summarizeBy: none
+		sourceColumn: producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_producto
+		dataType: string
+		lineageTag: f3155e3c-0451-4bac-b310-5624e981ea7b
+		summarizeBy: none
+		sourceColumn: nombre_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column proceso
+		dataType: string
+		lineageTag: c3f38113-d469-418f-80ea-4a165145d897
+		summarizeBy: none
+		sourceColumn: proceso
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_proceso
+		dataType: string
+		lineageTag: 615aeafb-2f9c-44e0-84de-93f8419396b8
+		summarizeBy: none
+		sourceColumn: nombre_proceso
+
+		annotation SummarizationSetBy = Automatic
+
+	column unidad
+		dataType: string
+		lineageTag: d265bdd4-cd13-40fd-85e2-364ee6eb761e
+		summarizeBy: none
+		sourceColumn: unidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column dataset
+		dataType: string
+		lineageTag: 3dda0423-9a1a-4e9b-85ff-1be6181f6c25
+		summarizeBy: none
+		sourceColumn: dataset
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: 1aef5097-e64e-4f23-9c44-e15ba5772ebc
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_medida
+		dataType: string
+		lineageTag: 51049505-93ee-4f9a-b5ac-7fd5deccb177
+		summarizeBy: none
+		sourceColumn: tipo_medida
+
+		annotation SummarizationSetBy = Automatic
+
+	column frecuencia
+		dataType: string
+		lineageTag: c6540307-edbd-4980-a9a7-e2868752dc19
+		summarizeBy: none
+		sourceColumn: frecuencia
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_serie = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_dim_serie = Origen{[Schema="gold",Item="dim_serie"]}[Data]
+				in
+				    gold_dim_serie
+
+	annotation PBI_ResultType = Table
+

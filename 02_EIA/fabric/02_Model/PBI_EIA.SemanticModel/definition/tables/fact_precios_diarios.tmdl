@@ -1,0 +1,44 @@
+/// Precios diarios del crudo y del gas natural. Una fila por serie y día, con el precio spot del WTI y el Brent en dólares por barril y del Henry Hub, spot y futuro, en dólares por millón de BTU.
+table fact_precios_diarios
+	lineageTag: 922e12b1-c87e-43ba-aee0-1140909e78eb
+
+	column fecha
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 811eafc0-89ed-4d6d-9935-f0e41c41396d
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column serie
+		dataType: string
+		lineageTag: ad11a502-1e4d-4ecb-82a3-7480b00f0fbb
+		summarizeBy: none
+		sourceColumn: serie
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio
+		dataType: double
+		lineageTag: 2cc15818-6bbb-4174-9570-eab8d12bd2d9
+		summarizeBy: sum
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_precios_diarios = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_fact_precios_diarios = Origen{[Schema="gold",Item="fact_precios_diarios"]}[Data]
+				in
+				    gold_fact_precios_diarios
+
+	annotation PBI_ResultType = Table
+

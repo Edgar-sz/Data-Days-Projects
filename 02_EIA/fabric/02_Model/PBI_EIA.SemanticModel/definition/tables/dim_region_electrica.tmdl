@@ -1,0 +1,49 @@
+/// Catálogo de regiones de la red eléctrica de Estados Unidos. Una fila por región, con su código y nombre en EIA, un indicador del total nacional (US48) y otro de las 8 regiones analizadas. Se usa para filtrar los hechos de electricidad.
+table dim_region_electrica
+	lineageTag: bd960c5d-1ca6-406a-b73d-b9045e6302d1
+
+	column region
+		dataType: string
+		lineageTag: f72a0934-091c-448b-af99-c48622b03f7c
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_region
+		dataType: string
+		lineageTag: cfbd5994-0241-4ad2-a761-1a05afc2f624
+		summarizeBy: none
+		sourceColumn: nombre_region
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_total_nacional
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a78f9d05-96f8-47aa-848d-e93235389dc6
+		summarizeBy: none
+		sourceColumn: es_total_nacional
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_region_analizada
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 914e1946-4c05-4864-a661-9f8c0faabf73
+		summarizeBy: none
+		sourceColumn: es_region_analizada
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_region_electrica = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_dim_region_electrica = Origen{[Schema="gold",Item="dim_region_electrica"]}[Data]
+				in
+				    gold_dim_region_electrica
+
+	annotation PBI_ResultType = Table
+

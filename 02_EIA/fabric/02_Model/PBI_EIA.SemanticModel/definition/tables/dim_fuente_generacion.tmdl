@@ -1,0 +1,56 @@
+/// Catálogo de fuentes de generación eléctrica. Una fila por fuente, con su código en EIA, nombre en español y original, grupo (Fósil, Renovable, Nuclear, Almacenamiento u Otras) y un indicador de si es renovable.
+table dim_fuente_generacion
+	lineageTag: 5da21807-1d00-45c0-9c5d-9911887083bb
+
+	column fuente
+		dataType: string
+		lineageTag: 5930557c-0d71-4ed5-843e-8987942a47cf
+		summarizeBy: none
+		sourceColumn: fuente
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_fuente
+		dataType: string
+		lineageTag: b52c3c5b-c360-41f6-95d5-20ec92017eb1
+		summarizeBy: none
+		sourceColumn: nombre_fuente
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_fuente_eia
+		dataType: string
+		lineageTag: cfde5449-e7fc-4b29-95e8-641534e5f034
+		summarizeBy: none
+		sourceColumn: nombre_fuente_eia
+
+		annotation SummarizationSetBy = Automatic
+
+	column grupo_fuente
+		dataType: string
+		lineageTag: a22e6d14-b01c-4b2f-ad96-ce45f4a1e0ad
+		summarizeBy: none
+		sourceColumn: grupo_fuente
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_renovable
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 28208ec3-4d40-4832-91c9-0b20b07ca5ff
+		summarizeBy: none
+		sourceColumn: es_renovable
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_fuente_generacion = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database("wti3qsrsny5ubkqqyjsvazioli-va6geanzurguhfvfvfwoqgzph4.datawarehouse.fabric.microsoft.com", "LH_EIA"),
+				    gold_dim_fuente_generacion = Origen{[Schema="gold",Item="dim_fuente_generacion"]}[Data]
+				in
+				    gold_dim_fuente_generacion
+
+	annotation PBI_ResultType = Table
+
