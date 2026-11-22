@@ -6,6 +6,7 @@ Colección de proyectos de datos de punta a punta con **Microsoft Fabric** y **P
 | # | Proyecto | Qué hace | Tecnologías |
 |---|---|---|---|
 | 01 | [**Observatorio Cripto**](01_CoinGecko/) | Tablero de una página sobre el top 100 de criptoactivos: capitalización, volumen, dominancia de Bitcoin y calidad de los datos | Fabric (Lakehouse, notebooks, pipeline), Power BI, API de CoinGecko |
+| 02 | [**Pulso Energético de EE. UU.**](02_EIA/) | Tablero de una página sobre electricidad, gas natural y petróleo en Estados Unidos con carga histórica acumulativa (append): consumo, precios, inventarios y frescura de los datos | Fabric (Lakehouse, pipeline con Copy, notebooks), Power BI, API de la EIA |
 
 ## Cómo está organizado cada proyecto
 ```

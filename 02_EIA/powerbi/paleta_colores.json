@@ -1,0 +1,54 @@
+{
+  "nombre": "Pulso Energético de EE. UU. · Claro por sector",
+  "descripcion": "Paleta de colores usada en el tablero de Power BI. Tema claro con un color de acento por sector (Electricidad, Gas natural y Petróleo) que cambia con la segmentación de botones. Proyecto independiente, sin afiliación con la EIA.",
+  "fuente": "Colores extraídos de las medidas HTML del modelo (fabric/02_Model) y de los visuales nativos del informe (fabric/03_Report).",
+  "formato": "hex #RRGGBB; los valores rgba se indican en 'rgba'.",
+  "base": {
+    "fondo_pagina": { "hex": "#EAEFF5", "uso": "Fondo del lienzo, visible entre las tarjetas" },
+    "superficie": { "hex": "#FFFFFF", "uso": "Tarjetas de indicadores, gráfico de líneas, gráfico de barras, claves y panel de frescura" },
+    "superficie_translucida": { "rgba": "rgba(255,255,255,.90)", "uso": "Tarjetas principales y flotantes sobre el banner" },
+    "borde": { "hex": "#E1E8F0", "uso": "Borde de 1 px de las tarjetas blancas" },
+    "fondo_gris_claro": { "hex": "#F1F4F8", "uso": "Fondo de la segmentación de año y pista de las barras" },
+    "separador": { "hex": "#EEF2F6", "uso": "Líneas entre filas del panel de frescura" }
+  },
+  "texto": {
+    "principal": { "hex": "#0F1E33", "uso": "Títulos y cifras" },
+    "secundario": { "hex": "#4F6078", "uso": "Etiquetas, subtítulos y textos de apoyo" },
+    "tenue": { "hex": "#7F8EA4", "uso": "Notas, ejes y pies de tarjeta" },
+    "sobre_acento": { "hex": "#10213A", "uso": "Texto del botón de sector seleccionado" }
+  },
+  "sectores": {
+    "electricidad": {
+      "acento": { "hex": "#F2B01E", "uso": "Botón seleccionado, barra mayor, línea de consumo, barras de progreso" },
+      "oscuro": { "hex": "#7F5300", "uso": "Íconos y nombre del tablero" },
+      "tinte": { "hex": "#FFF1CC", "uso": "Fondo de íconos y centro del degradado del banner" },
+      "tinte_suave": { "hex": "#FFFAEB", "uso": "Degradado del banner y de la tarjeta de claves" }
+    },
+    "gas_natural": {
+      "acento": { "hex": "#2E9BE6", "uso": "Botón seleccionado, barra mayor, línea del Henry Hub, barras de progreso" },
+      "oscuro": { "hex": "#0E5C98", "uso": "Íconos y nombre del tablero" },
+      "tinte": { "hex": "#D9EDFC", "uso": "Fondo de íconos y centro del degradado del banner" },
+      "tinte_suave": { "hex": "#F1F8FF", "uso": "Degradado del banner y de la tarjeta de claves" }
+    },
+    "petroleo": {
+      "acento": { "hex": "#EF6A3A", "uso": "Botón seleccionado, barra mayor, línea del WTI, barras de progreso" },
+      "oscuro": { "hex": "#A2380F", "uso": "Íconos y nombre del tablero" },
+      "tinte": { "hex": "#FBE0D4", "uso": "Fondo de íconos y centro del degradado del banner" },
+      "tinte_suave": { "hex": "#FFF5F0", "uso": "Degradado del banner y de la tarjeta de claves" }
+    }
+  },
+  "estados": {
+    "sube": { "hex": "#15803D", "fondo": "#DCF5E6", "uso": "Chip de variación positiva (▲)" },
+    "baja": { "hex": "#BE2F4A", "fondo": "#FDE3E8", "uso": "Chip de variación negativa (▼)" },
+    "sin_cambio": { "hex": "#4F6078", "fondo": "#EEF2F7", "uso": "Chip sin variación" },
+    "al_dia": { "hex": "#22C55E", "uso": "Punto del botón de frescura cuando las 9 tablas están al día" },
+    "atrasado": { "hex": "#F97066", "uso": "Punto del botón de frescura cuando alguna tabla se atrasa" }
+  },
+  "por_elemento": {
+    "barras": { "barra_mayor": "acento del sector (medida Color del sector)", "barra_resto": "#C9D3DF" },
+    "linea": { "serie_principal": "acento del sector", "serie_referencia": "#94A3B8", "cuadricula": "#EDF1F5" },
+    "tarjeta_volteada": { "fondo": "#12223A", "texto": "#DCE6F3" },
+    "panel_frescura": { "fondo": "#FFFFFF", "resumen": "#F4F7FA", "velo": { "rgba": "rgba(10,20,36,.45)" } },
+    "iconos_sector": { "electricidad": "#B07A00", "gas_natural": "#1673B8", "petroleo": "#C2410C", "fondo": { "rgba": "rgba(255,255,255,.80)" } }
+  }
+}
