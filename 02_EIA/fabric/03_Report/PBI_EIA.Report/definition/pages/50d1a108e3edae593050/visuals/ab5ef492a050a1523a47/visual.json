@@ -5,8 +5,8 @@
     "x": 0,
     "y": 0,
     "z": 0,
-    "height": 1080.250772500759,
-    "width": 1919.7599442727776,
+    "height": 1079.7401139006977,
+    "width": 1919.6919868452715,
     "tabOrder": 0
   },
   "visual": {
@@ -96,6 +96,19 @@
         }
       ],
       "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualTooltip": [
         {
           "properties": {
             "show": {

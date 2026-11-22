@@ -492,34 +492,6 @@
           }
         },
         "type": "Categorical"
-      },
-      {
-        "name": "c8ab97aeaaecff3a3599",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "Medidas"
-              }
-            },
-            "Property": "WTI diario"
-          }
-        },
-        "type": "Advanced"
-      },
-      {
-        "name": "633d4873189c454c1715",
-        "field": {
-          "Measure": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "Medidas"
-              }
-            },
-            "Property": "Brent diario"
-          }
-        },
-        "type": "Advanced"
       }
     ]
   }
